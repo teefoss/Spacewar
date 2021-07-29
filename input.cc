@@ -4,16 +4,15 @@
 
 #include <dos.h>
 
-#define KEYB_USERS 2
-
 static SDL_Scancode left[KEYB_USERS] = { SDL_SCANCODE_A, SDL_SCANCODE_LEFT };
 static SDL_Scancode right[KEYB_USERS] = { SDL_SCANCODE_D, SDL_SCANCODE_RIGHT };
 static SDL_Scancode thrust[KEYB_USERS] = { SDL_SCANCODE_S, SDL_SCANCODE_DOWN };
 static SDL_Scancode shoot[KEYB_USERS] = { SDL_SCANCODE_W, SDL_SCANCODE_UP };
 static SDL_Scancode shield[KEYB_USERS] = { SDL_SCANCODE_E, SDL_SCANCODE_SLASH };
 
+InputManager input;
 
-InputManager::InputManager()
+void InputManager::init(SDL_Renderer * renderer)
 {
     keys = SDL_GetKeyboardState(NULL);
     SDL_GameControllerEventState(SDL_ENABLE);
@@ -22,8 +21,56 @@ InputManager::InputManager()
     for ( int i = 0; i < NUM_CONTROLLERS; i++ ) {
         controllers[i] = NULL;
     }
+    
+    console = DOS_NewConsole(renderer, 80, 5, DOS_MODE80);
+    DOS_CSetCursorType(console, DOS_CURSOR_NONE);
+    updateConsole();
 }
 
+
+void InputManager::updateConsole()
+{
+    int num_controllers = numControllers();
+    int which_keyboard = 0;
+    const char * kb_strings[2] = { "Keyboard (WASD)", "Keyboard (Arrows)" };
+    
+    DOS_ClearConsole(console);
+    DOS_CSetBackground(console, DOS_TRANSPARENT);
+    DOS_ClearBackground(console);
+    
+    DOS_CSetForeground(console, DOS_BRIGHT_WHITE);
+    DOS_CPrintString(console, "Input Status\n");
+    
+    for ( int i = 0; i < MAX_PLAYERS; i++ ) {
+        DOS_CSetForeground(console, DOS_WHITE);
+        DOS_CPrintString(console, "Player %d: ", i + 1);
+        if ( num_controllers ) {
+            DOS_CSetForeground(console, DOS_BRIGHT_GREEN);
+            DOS_CPrintString(console, "Controller Connected");
+            --num_controllers;
+        } else {
+            if ( which_keyboard < KEYB_USERS ) {
+                DOS_CSetForeground(console, DOS_BROWN);
+                DOS_CPrintString(console, kb_strings[which_keyboard++]);
+            } else {
+                DOS_CSetBlink(console, true);
+                DOS_CSetForeground(console, DOS_BRIGHT_RED);
+                DOS_CPrintString(console, "No input connected");
+                DOS_CSetBlink(console, false);
+            }
+        }
+        DOS_CPrintString(console, "\n");
+    }
+}
+
+
+void InputManager::renderConsole()
+{
+    int height = DOS_CGetHeight(console) * DOS_CGetMode(console);
+    int x_offset = DOS_CHAR_WIDTH * 2;
+    
+    DOS_RenderConsole(console, MENU_MARGIN + x_offset, GAME_H - MENU_MARGIN - height);
+}
 
 
 void InputManager::disconnectControllers()
@@ -34,6 +81,9 @@ void InputManager::disconnectControllers()
             controllers[i] = NULL;
         }
     }
+    
+    game.setNumPlayers(game.numPlayers());
+    updateConsole();
 }
 
 
@@ -62,6 +112,8 @@ void InputManager::connectControllers()
             }
         }
     }
+    
+    updateConsole();
 }
 
 
@@ -70,6 +122,7 @@ void InputManager::reconnectControllers()
 {
     disconnectControllers();
     connectControllers();
+    updateConsole();
 }
 
 
@@ -102,7 +155,7 @@ void InputManager::processGameEvent(float dt)
 {
     float rotation_speed = PLAYER_ROTATION_SPEED * dt;
     
-    for ( int i = 0; i < game.num_players; i++ ) {
+    for ( int i = 0; i < game.numPlayers(); i++ ) {
         
         Player * player = game.players[i];
         
@@ -142,4 +195,13 @@ void InputManager::processGameEvent(float dt)
             player->shield_up = false;
         }
     }
+}
+
+
+InputState InputManager::getInput(int player_num)
+{
+    (void)player_num;
+    InputState state;
+    // determine which controller type
+    return state;
 }

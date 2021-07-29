@@ -13,6 +13,7 @@
 #define BLACK_HOLE_RADIUS       4.0f
 
 #define HUD_MARGIN              16
+#define MENU_MARGIN             32
 
 #define FPS                     60.0f
 #define MS_PER_FRAME            16.66667

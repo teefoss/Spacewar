@@ -15,9 +15,7 @@ Game game = Game();
 const Vec2 center = Vec2(GAME_W / 2, GAME_H / 2);
 
 void Game::init()
-{
-    DOS_InitSound();
-     
+{     
     renderer = SDL_CreateRenderer(window.SDL(), -1, 0);
     if ( renderer == NULL ) {
         exit(EXIT_FAILURE);
@@ -26,7 +24,9 @@ void Game::init()
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     InitMenu();
-    
+    input.init(renderer);
+    DOS_InitSound();
+
     // blackhole appears on title screen
     black_hole = new BlackHole();
     entities.append(black_hole);
@@ -76,12 +76,41 @@ void Game::start()
 }
 
 
+// max players allowed by current input
+int Game::maxPlayers()
+{
+    int max_players = KEYB_USERS + input.numControllers();
+    
+    if ( max_players > MAX_PLAYERS ) {
+        max_players = MAX_PLAYERS;
+    }
+    
+    return max_players;
+}
+
+void Game::setNumPlayers(int n)
+{
+    int number = n;
+    
+    CLAMP(number, 1, maxPlayers());
+    num_players = number;
+}
+
+
+int Game::numPlayers()
+{
+    return num_players;
+}
+
 
 bool Game::processKey(SDL_Keycode key)
 {
     switch ( key ) {
         case SDLK_ESCAPE:
             menu_is_open = !menu_is_open;
+            DOS_QueueSound(1320, 50);
+            DOS_QueueSound(1100, 50);
+            DOS_PlayQueuedSound();
             break;
         case SDLK_BACKSLASH:
             window.toggleFullscreen();
@@ -162,7 +191,7 @@ void Game::draw()
         
     if ( menu_is_open ) {
         DrawMenu();
-        //input->renderControllerStatus( MAX_PLAYERS, HUD_MARGIN * 2, GAME_H / 2);
+        input.renderConsole();
     }
     
 #if DEBUG_DATA

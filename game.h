@@ -28,6 +28,9 @@ public:
     void run(void);
     void start(void);
     void quit(void);
+    int maxPlayers(void);
+    void setNumPlayers(int n);
+    int numPlayers(void);
     
     bool running = true;
     bool paused = false;
@@ -47,7 +50,6 @@ private:
     void update(float dt);
     void draw(void);
     
-    InputManager input = InputManager();
     BlackHole * black_hole;
     int next_powerup_tick = 0;
     

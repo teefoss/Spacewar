@@ -31,13 +31,20 @@
 #include "storage.h"
 #include "log.h"
 #include "types.h"
+#include "net.h"
+
+#include <SDL2/SDL.h>
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <SDL2/SDL.h>
 
-int main(void)
+int main(int argc, char ** argv)
 {
+    if ( !Log::create("log.txt") ) {
+        fprintf(stderr, "failed to created log file\n");
+        return EXIT_FAILURE;
+    }
+        
     u32 flags = 0;
     flags |= SDL_INIT_VIDEO;
     flags |= SDL_INIT_AUDIO;
@@ -47,16 +54,15 @@ int main(void)
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         return EXIT_FAILURE;
     }
-    
-    atexit(SDL_Quit);
- 
-    if ( !Log::create("log.txt") ) {
-        fprintf(stderr, "failed to created log file\n");
-        return EXIT_FAILURE;
-    }
         
+    atexit(SDL_Quit);
+    
+    NetInit(argc, argv);
+    
     game.init();
     game.run();
+    
+    NetQuit();
     
     Log::destroy();
     

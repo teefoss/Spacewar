@@ -1,6 +1,7 @@
 #include "menu.h"
 #include "defines.h"
 #include "game.h"
+#include "input.h"
 
 #include <stdlib.h>
 #include <dos.h>
@@ -77,7 +78,7 @@ void DrawMenu()
         }
     }
     
-    DOS_RenderConsole(con, HUD_MARGIN * 2, HUD_MARGIN * 2);
+    DOS_RenderConsole(con, MENU_MARGIN, MENU_MARGIN);
 }
 
 int StartGame(void);
@@ -230,6 +231,17 @@ void MenuUp()
     }
 }
 
+static void CycleNumPlayers()
+{
+    int n = game.numPlayers() + 1;
+    
+    if ( n > game.maxPlayers() ) {
+        n = 1;
+    }
+    
+    game.setNumPlayers(n);
+}
+
 
 bool ProcessMenuKey(SDL_Keycode key)
 {
@@ -253,9 +265,7 @@ bool ProcessMenuKey(SDL_Keycode key)
             DOS_PlayQueuedSound();
             switch ( item->state ) {
                 case ITEM_CYCLE:
-                    if ( ++game.num_players > MAX_PLAYERS ) {
-                        game.num_players = 1;
-                    }
+                    CycleNumPlayers();
                     break;
                 case ITEM_TOGGLE:
                     *item->value = !*item->value;
