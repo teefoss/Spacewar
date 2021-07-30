@@ -4,13 +4,8 @@
 
 #include <dos.h>
 
-static SDL_Scancode left[KEYB_USERS] = { SDL_SCANCODE_A, SDL_SCANCODE_LEFT };
-static SDL_Scancode right[KEYB_USERS] = { SDL_SCANCODE_D, SDL_SCANCODE_RIGHT };
-static SDL_Scancode thrust[KEYB_USERS] = { SDL_SCANCODE_S, SDL_SCANCODE_DOWN };
-static SDL_Scancode shoot[KEYB_USERS] = { SDL_SCANCODE_W, SDL_SCANCODE_UP };
-static SDL_Scancode shield[KEYB_USERS] = { SDL_SCANCODE_E, SDL_SCANCODE_SLASH };
-
 InputManager input;
+
 
 void InputManager::init(SDL_Renderer * renderer)
 {
@@ -18,7 +13,7 @@ void InputManager::init(SDL_Renderer * renderer)
     SDL_GameControllerEventState(SDL_ENABLE);
     SDL_GameControllerAddMappingsFromFile("gamecontroller.txt");
     
-    for ( int i = 0; i < NUM_CONTROLLERS; i++ ) {
+    for ( int i = 0; i < MAX_CONTROLLERS; i++ ) {
         controllers[i] = NULL;
     }
     
@@ -49,7 +44,7 @@ void InputManager::updateConsole()
             DOS_CPrintString(console, "Controller Connected");
             --num_controllers;
         } else {
-            if ( which_keyboard < KEYB_USERS ) {
+            if ( which_keyboard < KB_NUM_USERS ) {
                 DOS_CSetForeground(console, DOS_BROWN);
                 DOS_CPrintString(console, kb_strings[which_keyboard++]);
             } else {
@@ -75,7 +70,7 @@ void InputManager::renderConsole()
 
 void InputManager::disconnectControllers()
 {
-    for ( int i = 0; i < NUM_CONTROLLERS; i++ ) {
+    for ( int i = 0; i < MAX_CONTROLLERS; i++ ) {
         if ( controllers[i] ) {
             SDL_GameControllerClose(controllers[i]);
             controllers[i] = NULL;
@@ -85,7 +80,6 @@ void InputManager::disconnectControllers()
     game.setNumPlayers(game.numPlayers());
     updateConsole();
 }
-
 
 
 void InputManager::connectControllers()
@@ -107,7 +101,7 @@ void InputManager::connectControllers()
             const char * name = SDL_GameControllerNameForIndex(i);
             printf("connected controller %d (%s).\n", j + 1, name);
             
-            if ( ++j == NUM_CONTROLLERS ) { // we only support 4
+            if ( ++j == MAX_CONTROLLERS ) { // we only support 4
                 return;
             }
         }
@@ -115,7 +109,6 @@ void InputManager::connectControllers()
     
     updateConsole();
 }
-
 
 
 void InputManager::reconnectControllers()
@@ -126,11 +119,10 @@ void InputManager::reconnectControllers()
 }
 
 
-
 int InputManager::numControllers()
 {
     int num = 0;
-    for ( int i = 0; i < NUM_CONTROLLERS; i++ ) {
+    for ( int i = 0; i < MAX_CONTROLLERS; i++ ) {
         if ( controllers[i] != NULL ) {
             num++;
         }
@@ -140,68 +132,51 @@ int InputManager::numControllers()
 }
 
 
-
-bool
-InputManager::buttonPressed(int controller, SDL_GameControllerButton button)
+// controllers take precedence. if num players > num controllers, use kb
+// - if controller: controller_num == player_num
+InputState InputManager::getInputState(int player_num)
 {
-    if ( controllers[controller] ) {
-        return SDL_GameControllerGetButton(controllers[controller], button);
-    }
-    
-    return false;
-}
-
-void InputManager::processGameEvent(float dt)
-{
-    float rotation_speed = PLAYER_ROTATION_SPEED * dt;
-    
-    for ( int i = 0; i < game.numPlayers(); i++ ) {
-        
-        Player * player = game.players[i];
-        
-        if (buttonPressed(i, SDL_CONTROLLER_BUTTON_DPAD_LEFT)
-            || (i < KEYB_USERS && keys[left[i]]) )
-        {
-            player->rotateByDegrees(-rotation_speed);
-        }
-        
-        if (buttonPressed(i, SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
-            || (i < KEYB_USERS && keys[right[i]]) )
-        {
-            player->rotateByDegrees(+rotation_speed);
-        }
-
-        if (buttonPressed(i, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)
-            || (i < KEYB_USERS && keys[thrust[i]]) )
-        {
-            player->thrust(dt);
-        }
-                
-        if (buttonPressed(i, SDL_CONTROLLER_BUTTON_A)
-            || (i < KEYB_USERS && keys[shoot[i]]) )
-        {
-            if ( player->powerup != POWERUP_LASER ) {
-                player->shootBullet(game.entities);
-            }
-        }
-        
-        if (buttonPressed(i, SDL_CONTROLLER_BUTTON_B)
-            || (i < KEYB_USERS && keys[shield[i]]) )
-        {
-            if ( player->shield_strength ) {
-                player->shield_up = true;
-            }
-        } else {
-            player->shield_up = false;
-        }
-    }
-}
-
-
-InputState InputManager::getInput(int player_num)
-{
-    (void)player_num;
     InputState state;
-    // determine which controller type
+    
+    // WASD (0) or arrows (1)?
+    int which_keyboard = player_num - numControllers();
+    
+    if ( which_keyboard < 0 ) {
+        state = getControllerInputState(player_num);
+    } else {
+        state = getKeyboardInputState(which_keyboard);
+    }
+    
+    return state;
+}
+
+
+InputState InputManager::getKeyboardInputState(int which_keyboard)
+{
+    InputState state;
+    memset(&state, 0, sizeof(state));
+    
+    state.left   = keys[which_keyboard ? SDL_SCANCODE_LEFT  : SDL_SCANCODE_A];
+    state.right  = keys[which_keyboard ? SDL_SCANCODE_RIGHT : SDL_SCANCODE_D];
+    state.thrust = keys[which_keyboard ? SDL_SCANCODE_DOWN  : SDL_SCANCODE_S];
+    state.shoot  = keys[which_keyboard ? SDL_SCANCODE_UP    : SDL_SCANCODE_W];
+    state.shield = keys[which_keyboard ? SDL_SCANCODE_SLASH : SDL_SCANCODE_E];
+        
+    return state;
+}
+
+
+InputState InputManager::getControllerInputState(int controller_num)
+{
+    InputState state;
+    memset(&state, 0, sizeof(state));
+    
+    SDL_GameController * c = controllers[controller_num];
+    state.left   = SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
+    state.right  = SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+    state.thrust = SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+    state.shoot  = SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+    state.shield = SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_Y);
+    
     return state;
 }

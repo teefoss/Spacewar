@@ -4,16 +4,20 @@
 #include <SDL2/SDL.h>
 #include <dos.h>
 
-#define NUM_CONTROLLERS 4
-#define KEYB_USERS 2
+#define MAX_CONTROLLERS 4
 
-// TODO: convert to DOS_Console
+enum
+{
+    KB_WASD,
+    KB_ARROWS,
+    KB_NUM_USERS
+};
 
 typedef struct
 {
     unsigned left       : 1;
     unsigned right      : 1;
-    unsigned forward    : 1;
+    unsigned thrust     : 1;
     unsigned shoot      : 1;
     unsigned shield     : 1;
 } InputState;
@@ -23,7 +27,7 @@ class Game;
 struct InputManager
 {
     const unsigned char * keys;
-    SDL_GameController * controllers[NUM_CONTROLLERS];
+    SDL_GameController * controllers[MAX_CONTROLLERS];
     
     InputManager() { }
     void init(SDL_Renderer * renderer);
@@ -38,7 +42,9 @@ struct InputManager
     
     void renderConsole(void);
     
-    InputState getInput(int player_num);
+    InputState getInputState(int player_num);
+    InputState getKeyboardInputState(int which_keyboard);
+    InputState getControllerInputState(int controller_num);
     
 private:
     void updateConsole(void);

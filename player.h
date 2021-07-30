@@ -5,6 +5,7 @@
 #include "storage.h"
 #include "defines.h"
 #include "powerup.h"
+#include "input.h"
 
 #include <vector>
 
@@ -26,7 +27,7 @@ class Player : public Entity
 public:
     Player(int index);
     ~Player();
-    
+
     void update(float dt) override;
     void draw(SDL_Renderer * renderer) override;
     void contact(Entity * hit) override;
@@ -50,6 +51,7 @@ public:
     bool shield_up;
     
 private:
+    void updateFromInputState(float dt);
     void resetPosition(void);
     bool isDead(void);
     bool isRespawning(void);

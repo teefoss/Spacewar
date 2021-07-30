@@ -265,12 +265,40 @@ void Player::explode(int dos_color)
 }
 
 
+void Player::updateFromInputState(float dt)
+{
+    float rotation_speed = PLAYER_ROTATION_SPEED * dt;
+    InputState state = input.getInputState(number);
+    
+    if ( state.left )
+        rotateByDegrees(-rotation_speed);
+    
+    if ( state.right )
+        rotateByDegrees(+rotation_speed);
+    
+    if ( state.thrust )
+        thrust(dt);
+    
+    if ( state.shoot && powerup != POWERUP_LASER )
+        shootBullet(game.entities);
+    
+    if ( state.shield ) {
+        if ( shield_strength ) {
+            shield_up = true;
+        }
+    } else {
+        shield_up = false;
+    }
+}
+
 
 void Player::update(float dt)
 {
     if ( num_lives == 0 ) {
         return;
     }
+    
+    updateFromInputState(dt);
 
     if ( shield_strength > 0 && shield_up ) {
         --shield_strength;

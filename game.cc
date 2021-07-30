@@ -76,10 +76,10 @@ void Game::start()
 }
 
 
-// max players allowed by current input
+// max players allowed by current input status (how many controllers connected)
 int Game::maxPlayers()
 {
-    int max_players = KEYB_USERS + input.numControllers();
+    int max_players = KB_NUM_USERS + input.numControllers();
     
     if ( max_players > MAX_PLAYERS ) {
         max_players = MAX_PLAYERS;
@@ -166,7 +166,7 @@ bool Game::processEvent(SDL_Event * event)
 
 
 
-void Game::draw()
+void Game::drawGame()
 {
     SDL_SetRenderDrawColor(renderer, 16, 16, 16, 255);
     SDL_RenderClear(renderer);
@@ -207,7 +207,7 @@ void Game::draw()
 }
 
 
-void Game::update(float dt)
+void Game::updateGame(float dt)
 {
     black_hole->emitParticles(3, DOS_RED);
     particles.update(dt);
@@ -217,6 +217,7 @@ void Game::update(float dt)
         return;
     }
     
+    // TODO: refactor: TrySpawnPowerup
     if ( powerups_on ) {
         if ( ticks > next_powerup_tick ) {
             next_powerup_tick = ticks + Random(SEC_TO_TICKS(15), SEC_TO_TICKS(25));
@@ -229,6 +230,7 @@ void Game::update(float dt)
         entities[i]->update(dt);
     }
     
+    // TODO: move to BlackHole update
     // black hole gravity
     for ( int i = 0; i < num_players; i++ ) {
         if (players[i]
@@ -239,6 +241,7 @@ void Game::update(float dt)
         }
     }
     
+    // TODO: move to player->update
     // player lasers
     for ( int i = 0; i < num_players; i++ ) {
         if ( !players[i]->isActive() ) {
@@ -286,6 +289,7 @@ void Game::run()
     while ( running ) {
         ticks++;
         
+        // limit framerate
         int current_ms, elapsed_ms;
         do {
             current_ms = SDL_GetTicks();
@@ -297,25 +301,14 @@ void Game::run()
         } while ( elapsed_ms < MS_PER_FRAME );
         dt = ((float)current_ms - (float)last_ms) / 1000.0f;
         last_ms = current_ms;
-
-        //int frame_start = SDL_GetTicks();
         
         SDL_Event event;
         while ( SDL_PollEvent(&event) ) {
             running = processEvent(&event);
         }
-        
-        if ( !menu_is_open && !paused) {
-            input.processGameEvent(dt);
-        }
-        
-        update(dt);
-        
-        if ( ticks % 10 == 0 ) {
-            //printf("frame time: %d\n", SDL_GetTicks() - frame_start);
-        }
-        
-        draw();
+                
+        updateGame(dt);
+        drawGame();
     }
     
     quit();

@@ -47,8 +47,8 @@ private:
     bool processEvent(SDL_Event * event);
     bool processKey(SDL_Keycode key);
     void processPlayerInput(float dt);
-    void update(float dt);
-    void draw(void);
+    void updateGame(float dt);
+    void drawGame(void);
     
     BlackHole * black_hole;
     int next_powerup_tick = 0;
