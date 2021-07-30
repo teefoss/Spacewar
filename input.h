@@ -1,6 +1,8 @@
 #ifndef input_h
 #define input_h
 
+#include "types.h"
+
 #include <SDL2/SDL.h>
 #include <dos.h>
 
@@ -13,41 +15,37 @@ enum
     KB_NUM_USERS
 };
 
-typedef struct
+typedef enum
 {
-    unsigned left       : 1;
-    unsigned right      : 1;
-    unsigned thrust     : 1;
-    unsigned shoot      : 1;
-    unsigned shield     : 1;
-} InputState;
+    INPUT_LEFT   = 0x01,
+    INPUT_RIGHT  = 0x02,
+    INPUT_THRUST = 0x04,
+    INPUT_SHOOT  = 0x08,
+    INPUT_SHIELD = 0x10
+} InputFlags;
 
-class Game;
+typedef u8 InputState;
 
-struct InputManager
+class InputManager
 {
-    const unsigned char * keys;
-    SDL_GameController * controllers[MAX_CONTROLLERS];
-    
+public:
     InputManager() { }
     void init(SDL_Renderer * renderer);
     
-    void disconnectControllers();
-    void connectControllers();
     void reconnectControllers();
     int numControllers();
-    
-    bool buttonPressed(int controller, SDL_GameControllerButton button);
-    void processGameEvent(float dt);
-    
     void renderConsole(void);
-    
     InputState getInputState(int player_num);
-    InputState getKeyboardInputState(int which_keyboard);
-    InputState getControllerInputState(int controller_num);
     
 private:
     void updateConsole(void);
+    void disconnectControllers();
+    void connectControllers();
+    InputState getKeyboardInputState(int which_keyboard);
+    InputState getControllerInputState(int controller_num);
+
+    const unsigned char * keys;
+    SDL_GameController * controllers[MAX_CONTROLLERS];
     DOS_Console * console;
 };
 

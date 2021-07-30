@@ -270,19 +270,19 @@ void Player::updateFromInputState(float dt)
     float rotation_speed = PLAYER_ROTATION_SPEED * dt;
     InputState state = input.getInputState(number);
     
-    if ( state.left )
+    if ( state & INPUT_LEFT )
         rotateByDegrees(-rotation_speed);
     
-    if ( state.right )
+    if ( state & INPUT_RIGHT )
         rotateByDegrees(+rotation_speed);
     
-    if ( state.thrust )
+    if ( state & INPUT_THRUST )
         thrust(dt);
     
-    if ( state.shoot && powerup != POWERUP_LASER )
+    if ( (state & INPUT_SHOOT) && (powerup != POWERUP_LASER) )
         shootBullet(game.entities);
     
-    if ( state.shield ) {
+    if ( state & INPUT_SHIELD ) {
         if ( shield_strength ) {
             shield_up = true;
         }
