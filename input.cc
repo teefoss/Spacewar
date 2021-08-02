@@ -1,6 +1,7 @@
 #include "input.h"
 #include "utility.h"
 #include "game.h"
+#include "net.h"
 
 #include <dos.h>
 
@@ -136,8 +137,9 @@ int InputManager::numControllers()
 // - if controller: controller_num == player_num
 InputState InputManager::getInputState(int player_num)
 {
-    InputState state = 0;
-    
+    InputState state;
+    memset(&state, 0, sizeof state);
+        
     // WASD (0) or arrows (1)?
     int which_keyboard = player_num - numControllers();
     
@@ -153,46 +155,30 @@ InputState InputManager::getInputState(int player_num)
 
 InputState InputManager::getKeyboardInputState(int which_keyboard)
 {
-    InputState state = 0;
+    InputState state;
     
-    if ( keys[which_keyboard ? SDL_SCANCODE_LEFT  : SDL_SCANCODE_A] )
-        state |= INPUT_LEFT;
-    
-    if ( keys[which_keyboard ? SDL_SCANCODE_RIGHT  : SDL_SCANCODE_D] )
-        state |= INPUT_RIGHT;
-    
-    if ( keys[which_keyboard ? SDL_SCANCODE_DOWN  : SDL_SCANCODE_S] )
-        state |= INPUT_THRUST;
-    
-    if ( keys[which_keyboard ? SDL_SCANCODE_UP  : SDL_SCANCODE_W] )
-        state |= INPUT_SHOOT;
-    
-    if ( keys[which_keyboard ? SDL_SCANCODE_SLASH  : SDL_SCANCODE_E] )
-        state |= INPUT_SHIELD;
-        
+    state.left   = keys[ which_keyboard ? SDL_SCANCODE_LEFT  : SDL_SCANCODE_A ];
+    state.right  = keys[ which_keyboard ? SDL_SCANCODE_RIGHT : SDL_SCANCODE_D ];
+    state.thrust = keys[ which_keyboard ? SDL_SCANCODE_DOWN  : SDL_SCANCODE_S ];
+    state.shoot  = keys[ which_keyboard ? SDL_SCANCODE_UP    : SDL_SCANCODE_W ];
+    state.shield = keys[ which_keyboard ? SDL_SCANCODE_SLASH : SDL_SCANCODE_E ];
+
     return state;
 }
 
 
+#define CONTROLLER(x) SDL_CONTROLLER_BUTTON_ ## x
+
 InputState InputManager::getControllerInputState(int controller_num)
 {
-    InputState state = 0;
+    InputState state;
+    
     SDL_GameController * c = controllers[controller_num];
-    
-    if ( SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_DPAD_LEFT) )
-        state |= INPUT_LEFT;
-    
-    if ( SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) )
-        state |= INPUT_RIGHT;
-        
-    if ( SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) )
-        state |= INPUT_THRUST;
-        
-    if ( SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_A) )
-        state |= INPUT_SHOOT;
-        
-    if ( SDL_GameControllerGetButton(c, SDL_CONTROLLER_BUTTON_Y) )
-        state |= INPUT_SHIELD;
+    state.left   = SDL_GameControllerGetButton( c, CONTROLLER( DPAD_LEFT ) );
+    state.right  = SDL_GameControllerGetButton( c, CONTROLLER( DPAD_RIGHT ) );
+    state.thrust = SDL_GameControllerGetButton( c, CONTROLLER( RIGHTSHOULDER ) );
+    state.shoot  = SDL_GameControllerGetButton( c, CONTROLLER( A ) );
+    state.shield = SDL_GameControllerGetButton( c, CONTROLLER( Y ) );
     
     return state;
 }

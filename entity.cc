@@ -34,6 +34,18 @@ Entity::~Entity()
 }
 
 
+EntityData Entity::entityData()
+{
+    EntityData entity_data;
+    entity_data.velocity = velocity;
+    entity_data.position = position;
+    entity_data.orientation = orientation;
+    entity_data.angle = angle;
+    entity_data.alive = alive;
+    
+    return entity_data;
+}
+
 
 void Entity::setOrientation(Cardinal direction)
 {

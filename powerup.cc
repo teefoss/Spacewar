@@ -38,6 +38,21 @@ Powerup::Powerup()
 }
 
 
+Data Powerup::data()
+{
+    Data d;
+    d.buffer = malloc(sizeof(PowerupData));
+    d.size = sizeof(PowerupData);
+
+    PowerupData * buf = (PowerupData *)d.buffer;
+    buf->entity_data = Entity::entityData();
+    buf->type = type;
+    buf->effect_time = effect_time;
+    buf->lifespan = lifespan;
+    
+    return d;
+}
+
 
 void Powerup::update(float dt)
 {

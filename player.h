@@ -9,6 +9,7 @@
 
 #include <vector>
 
+// TODO: player state
 struct PlayerState
 {
     int time;
@@ -20,7 +21,20 @@ struct PlayerState
     virtual void processInput(void) = 0; // TODO: ?
 };
 
-class Game;
+typedef struct
+{
+    EntityData entity_data;
+    u8 number;
+    u8 num_lives;
+    u8 num_bullets;
+    u8 powerup;
+    u8 shield_strength;
+    u8 shield_up;
+    u8 respawn_timer;
+    u8 shoot_cooldown_timer;
+    u8 bullet_recharge_timer;
+    u8 powerup_timer;
+} PlayerData;
 
 class Player : public Entity
 {
@@ -29,12 +43,15 @@ public:
     ~Player();
 
     void update(float dt) override;
+    void updateFromInputState(InputState input_state, float dt);
     void draw(SDL_Renderer * renderer) override;
     void contact(Entity * hit) override;
+    Data data(void) override;
+    
     bool isActive(void);
     void explode(int dos_color);
     void thrust(float dt);
-    void shootBullet(Storage<Entity *> &entities);
+    void shootBullet(void);
     void rotateByDegrees(float degrees);
     Vec2 nozzlePoint(void);
     Vec2 laserEndPoint(void);
@@ -51,7 +68,6 @@ public:
     bool shield_up;
     
 private:
-    void updateFromInputState(float dt);
     void resetPosition(void);
     bool isDead(void);
     bool isRespawning(void);

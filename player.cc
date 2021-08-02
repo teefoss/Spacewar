@@ -107,6 +107,27 @@ Player::~Player()
 }
 
 
+Data Player::data()
+{
+    Data d;
+    d.buffer = malloc(sizeof(PlayerData));
+    d.size = sizeof(PlayerData);
+
+    PlayerData * buf = (PlayerData *)d.buffer;
+    buf->number = number;
+    buf->num_lives = num_lives;
+    buf->num_bullets = num_bullets;
+    buf->powerup = powerup;
+    buf->shield_strength = shield_strength;
+    buf->shield_up = shield_up;
+    buf->respawn_timer = respawn_timer;
+    buf->shoot_cooldown_timer = shoot_cooldown_timer;
+    buf->bullet_recharge_timer = bullet_recharge_timer;
+    buf->powerup_timer = powerup_timer;
+    
+    return d;
+}
+
 
 void Player::makeHUDTexture(SDL_Renderer * renderer)
 {
@@ -209,7 +230,7 @@ void Player::resetPosition()
 
 
 
-void Player::shootBullet(Storage<Entity *> &entities)
+void Player::shootBullet()
 {
     if ( isRespawning() ) {
         return;
@@ -233,7 +254,7 @@ void Player::shootBullet(Storage<Entity *> &entities)
             bullet->velocity.rotateByDegrees(10);
         }
         
-        entities.append(bullet);
+        game.entities.append(bullet);
     }
         
     shoot_cooldown_timer = SHOT_DELAY;
@@ -265,24 +286,23 @@ void Player::explode(int dos_color)
 }
 
 
-void Player::updateFromInputState(float dt)
+void Player::updateFromInputState(InputState input_state, float dt)
 {
     float rotation_speed = PLAYER_ROTATION_SPEED * dt;
-    InputState state = input.getInputState(number);
     
-    if ( state & INPUT_LEFT )
+    if ( input_state.left )
         rotateByDegrees(-rotation_speed);
     
-    if ( state & INPUT_RIGHT )
+    if ( input_state.right )
         rotateByDegrees(+rotation_speed);
     
-    if ( state & INPUT_THRUST )
+    if ( input_state.thrust )
         thrust(dt);
     
-    if ( (state & INPUT_SHOOT) && (powerup != POWERUP_LASER) )
-        shootBullet(game.entities);
+    if ( input_state.shoot && (powerup != POWERUP_LASER) )
+        shootBullet();
     
-    if ( state & INPUT_SHIELD ) {
+    if ( input_state.shield ) {
         if ( shield_strength ) {
             shield_up = true;
         }
@@ -297,8 +317,6 @@ void Player::update(float dt)
     if ( num_lives == 0 ) {
         return;
     }
-    
-    updateFromInputState(dt);
 
     if ( shield_strength > 0 && shield_up ) {
         --shield_strength;

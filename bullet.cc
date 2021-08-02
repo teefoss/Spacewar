@@ -3,7 +3,7 @@
 #include "utility.h"
 #include "player.h"
 
-SDL_Rect bullet_bounds = {
+static SDL_Rect bullet_bounds = {
     .x = (int)(-BULLET_RADIUS) * 2,
     .y = (int)(-BULLET_RADIUS) * 2,
     .w = GAME_W + ((int)BULLET_RADIUS * 2) * 2,
@@ -17,6 +17,19 @@ Bullet::Bullet(Vec2 position, int who_shot)
     player_index = who_shot;
 }
 
+
+Data Bullet::data()
+{
+    Data d;
+    d.buffer = malloc(sizeof(BulletData));
+    d.size = sizeof(BulletData);
+
+    BulletData * buf = (BulletData *)d.buffer;
+    buf->entity_data = Entity::entityData();
+    buf->player_index = player_index;
+    
+    return d;
+}
 
 
 void Bullet::draw(SDL_Renderer * renderer)

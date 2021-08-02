@@ -15,16 +15,14 @@ enum
     KB_NUM_USERS
 };
 
-typedef enum
+typedef struct
 {
-    INPUT_LEFT   = 0x01,
-    INPUT_RIGHT  = 0x02,
-    INPUT_THRUST = 0x04,
-    INPUT_SHOOT  = 0x08,
-    INPUT_SHIELD = 0x10
-} InputFlags;
-
-typedef u8 InputState;
+    u8 left     : 1;
+    u8 right    : 1;
+    u8 thrust   : 1;
+    u8 shoot    : 1;
+    u8 shield   : 1;
+} InputState;
 
 class InputManager
 {
@@ -39,8 +37,8 @@ public:
     
 private:
     void updateConsole(void);
-    void disconnectControllers();
-    void connectControllers();
+    void disconnectControllers(void);
+    void connectControllers(void);
     InputState getKeyboardInputState(int which_keyboard);
     InputState getControllerInputState(int controller_num);
 

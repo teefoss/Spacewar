@@ -16,7 +16,7 @@ struct Menu;
 class Game
 {
 public:
-    Window window = Window(GAME_NAME, GAME_W*2, GAME_H*2);
+    Window window = Window(GAME_NAME, GAME_W*2, GAME_H*2, 0, 0);
     SDL_Renderer * renderer;
     
     Storage<Entity *> entities;
@@ -47,8 +47,9 @@ private:
     bool processEvent(SDL_Event * event);
     bool processKey(SDL_Keycode key);
     void processPlayerInput(float dt);
-    void updateGame(float dt);
+    void updateGame(InputState input_state[MAX_PLAYERS], float dt);
     void drawGame(void);
+    void clearEntities(void);
     
     BlackHole * black_hole;
     int next_powerup_tick = 0;

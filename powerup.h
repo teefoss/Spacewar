@@ -17,7 +17,13 @@ enum PowerupType
     NUM_POWERUPS
 };
 
-// TODO: nuke - everything explodes
+typedef struct
+{
+    EntityData entity_data;
+    u8 type;
+    u16 effect_time;
+    u16 lifespan;
+} PowerupData;
 
 
 class Powerup : public Entity
@@ -27,6 +33,7 @@ public:
     void update(float dt) override;
     void draw(SDL_Renderer * renderer) override;
     void contact(Entity * hit) override;
+    Data data(void) override;
 
     PowerupType type;
     int effect_time; // how long the player has it for

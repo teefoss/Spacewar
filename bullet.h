@@ -3,6 +3,12 @@
 
 #include "entity.h"
 
+typedef struct
+{
+    EntityData entity_data;
+    u8 player_index;
+} BulletData;
+
 class Bullet : public Entity
 {
 public:
@@ -11,6 +17,7 @@ public:
     void update(float dt) override;
     void draw(SDL_Renderer * renderer) override;
     void contact(Entity * hit) override;
+    Data data(void) override;
     
     const int sound_len = 10;
     

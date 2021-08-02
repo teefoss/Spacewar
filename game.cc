@@ -8,8 +8,10 @@
 #include "powerup.h"
 #include "stars.h"
 #include "log.h"
+#include "net.h"
 
 #include <stdlib.h>
+#include <SDL2/SDL_net.h>
 
 Game game = Game();
 const Vec2 center = Vec2(GAME_W / 2, GAME_H / 2);
@@ -54,17 +56,22 @@ void Game::quit()
 }
 
 
+void Game::clearEntities()
+{
+    for ( unsigned i = 0; i < entities.count(); i++ ) {
+        delete entities[i];
+    }
+    
+    entities.empty();
+}
+
 
 void Game::start()
 {
     match_started = true;
     menu_is_open = false;
 
-    Entity * e = entities[0];
-    for ( unsigned i = 0; i < entities.count(); i++, e++ ) {
-        delete e;
-    }
-    entities.empty();
+    clearEntities();
         
     black_hole = new BlackHole();
     entities.append(black_hole);
@@ -184,7 +191,6 @@ void Game::drawGame()
 
     particles.draw(renderer);
     
-    
     for ( unsigned i = 0; i < entities.count(); i++ ) {
         entities[i]->draw(renderer);
     }
@@ -207,7 +213,7 @@ void Game::drawGame()
 }
 
 
-void Game::updateGame(float dt)
+void Game::updateGame(InputState input_state[MAX_PLAYERS], float dt)
 {
     black_hole->emitParticles(3, DOS_RED);
     particles.update(dt);
@@ -224,6 +230,10 @@ void Game::updateGame(float dt)
             Powerup * powerup = new Powerup();
             entities.append(powerup);
         }
+    }
+
+    for ( int i = 0; i < numPlayers(); i++ ) {
+        players[i]->updateFromInputState(input_state[i], dt);
     }
     
     for ( unsigned i = 0; i <entities.count(); i++ ) {
@@ -270,7 +280,7 @@ void Game::updateGame(float dt)
         }
     }
     
-    // removed dead entities
+    count = entities.count();
     for ( int i = count - 1; i >= 0; i-- ) {
         if ( !entities[i]->alive ) {
             delete entities[i];
@@ -286,6 +296,15 @@ void Game::run()
     static float dt;
     int last_ms = 0;
 
+//    LOG("size of entity: %zu bytes\n", sizeof(Entity));
+//    LOG("size of player: %zu bytes\n", sizeof(Player));
+//    LOG("size of entity data: %zu bytes\n", sizeof(EntityData));
+    
+    if ( is_network_game ) {
+        num_players = num_clients + 1;
+        start();
+    }
+    
     while ( running ) {
         ticks++;
         
@@ -306,8 +325,36 @@ void Game::run()
         while ( SDL_PollEvent(&event) ) {
             running = processEvent(&event);
         }
+        
+        InputState input_states[MAX_PLAYERS];
+        
+        if ( is_network_game ) {
+            if ( my_id == SERVER_ID ) {
+                // get input from myself and clients
+                input_states[0] = input.getInputState(0); // get my own state
+                for ( client_id_t id = 0; id < num_clients; id++ ) {
+                    input_states[id + 1] = HostReceiveInputState(id);
+                }
+                if ( input_states[1].shoot ) {
+                    puts("shoot");
+                }
+                updateGame(input_states, dt);
                 
-        updateGame(dt);
+                // send updated game to clients
+            } else {
+                InputState my_input = input.getInputState(0);
+                ClientSendInputState(my_input);
+                clearEntities();
+                // recv updated game from host
+            }
+        } else {
+            for ( int i = 0; i < num_players; i++ ) {
+                input_states[i] = input.getInputState(i);
+            }
+            
+            updateGame(input_states, dt);
+        }
+                
         drawGame();
     }
     
