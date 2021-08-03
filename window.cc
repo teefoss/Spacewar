@@ -49,3 +49,21 @@ void Window::toggleFullscreen()
     
     is_fullscreen = !is_fullscreen;
 }
+
+
+void Window::setSize(int width, int height)
+{
+    SDL_SetWindowSize(window, width, height);
+}
+
+
+void Window::setPosition(int x, int y)
+{
+    SDL_SetWindowPosition(window, x, y);
+}
+
+
+void Window::center()
+{
+    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+}

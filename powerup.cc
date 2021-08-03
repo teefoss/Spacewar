@@ -29,8 +29,8 @@ Powerup::Powerup()
     position.x = Random(HUD_MARGIN, GAME_W - HUD_MARGIN);
     position.y = Random(HUD_MARGIN, GAME_H - HUD_MARGIN);
     color = (DOS_Color)Random(DOS_GRAY, DOS_NUMCOLORS);
-    type = (PowerupType)Random(1, NUM_POWERUPS);
-    //type = POWERUP_LASER; // TEMP: debug
+    //type = (PowerupType)Random(1, NUM_POWERUPS);
+    type = POWERUP_LASER; // TEMP: debug
     
     PowerupInfo * info = &powerup_info[type];
     lifespan = info->disappears ? MS_TO_TICKS(25000) : -1;

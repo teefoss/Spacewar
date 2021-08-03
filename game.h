@@ -16,12 +16,6 @@ struct Menu;
 class Game
 {
 public:
-    Window window = Window(GAME_NAME, GAME_W*2, GAME_H*2, 0, 0);
-    SDL_Renderer * renderer;
-    
-    Storage<Entity *> entities;
-    Player * players[MAX_PLAYERS] = { NULL };
-
     Game() { };
     ~Game() { };
     void init(void);
@@ -32,12 +26,14 @@ public:
     void setNumPlayers(int n);
     int numPlayers(void);
     
+    Window window = Window(GAME_NAME, GAME_W*2, GAME_H*2, 0, 0);
+    SDL_Renderer * renderer;
+    Storage<Entity *> entities;
+    Player * players[MAX_PLAYERS] = { NULL };
     bool running = true;
     bool paused = false;
     bool match_started = false;
     int ticks = 0;
-    
-    // menu options
     int num_players = 2;
     int aliens_on = true;
     int powerups_on = true;
@@ -50,9 +46,10 @@ private:
     void updateGame(InputState input_state[MAX_PLAYERS], float dt);
     void drawGame(void);
     void clearEntities(void);
+    void trySpawnPowerup(void);
     
     BlackHole * black_hole;
-    int next_powerup_tick = 0;
+    int powerup_timer = SEC_TO_TICKS(10);
     
 #if DEBUG_DATA
     DOS_Console * con;

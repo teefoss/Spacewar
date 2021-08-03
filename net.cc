@@ -1,12 +1,9 @@
 #include "net.h"
 #include "log.h"
 #include "types.h"
-#include "defines.h"
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_net.h>
 
-#define MAX_CLIENTS (MAX_PLAYERS - 1)
 #define PORT 9999
 
 bool is_network_game = false;
@@ -83,11 +80,16 @@ void InitServer()
         
         SDL_Delay(100);
     }
+    
+    for ( int i = 0; i < num_clients; i++ ) {
+        printf("sending client %d num_clients (%d)\n", i, num_clients); // TEMP
+        SDLNet_TCP_Send(clients[i], &num_clients, sizeof(num_clients));
+    }
 }
 
 void InitClients(char * host_name)
 {
-    printf("Joing a network game at %s\n", host_name);
+    printf("Joining a network game at %s\n", host_name);
 
     is_network_game = true;
     
@@ -100,6 +102,9 @@ void InitClients(char * host_name)
     
     SDLNet_TCP_Recv(my_socket, &my_id, sizeof(my_id));
     printf("got id of %d from server\n", my_id);
+    
+    SDLNet_TCP_Recv(my_socket, &num_clients, sizeof(num_clients));
+    printf("server sent num_clients: %d\n", num_clients);
 }
 
 

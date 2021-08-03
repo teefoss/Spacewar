@@ -353,6 +353,19 @@ void Player::update(float dt)
     }
     
     updatePosition(dt, true);
+    
+    // shoot laser if available
+    
+    if ( powerup == POWERUP_LASER ) {
+        emitParticles(1, RANDOM_COLORS);
+        
+        for ( int i = 0; i < game.numPlayers(); i++ ) {
+            if ( i == number || !game.players[i]->isActive() ) {
+                continue;
+            }
+            laserPlayer(game.players[i]);
+        }
+    }
 }
 
 
@@ -493,25 +506,23 @@ void Player::eatPowerup(Powerup * pup)
             // TODO: make sure this all works
             RandomizedSound(120, 100, 2000);
 
-            Entity * e = game.entities[0];
-            for ( unsigned i = 0; i < game.entities.count(); i++, e++ ) {
+            for ( unsigned i = 0; i < game.entities.count(); i++ ) {
                 // draw line
-                switch ( e->type ) {
+                switch ( game.entities[i]->type ) {
                     case ENTITY_PLAYER: {
-                        Player * pl = (Player *)e;
+                        Player * pl = (Player *)game.entities[i];
                         pl->explode(DOS_RED);
                         pl->num_lives--;
                         break;
                     }
                     case ENTITY_BULLET:
                     case ENTITY_POWERUP:
-                        e->emitParticles(10, DOS_RED);
-                        e->alive = false;
+                        game.entities[i]->emitParticles(10, DOS_RED);
+                        game.entities[i]->alive = false;
                         break;
                     default:
                         break;
                 }
-                i++;
             }
             break;
         }

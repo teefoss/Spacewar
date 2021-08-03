@@ -44,9 +44,7 @@ void Game::init()
 
 void Game::quit()
 {
-    for ( unsigned i = 0; i < entities.count(); i++ ) {
-        delete entities[i];
-    }
+    clearEntities();
         
 #if DEBUG_DATA
     DOS_FreeConsole(con);
@@ -213,25 +211,32 @@ void Game::drawGame()
 }
 
 
+void Game::trySpawnPowerup()
+{
+    if ( !powerups_on ) {
+        return;
+    }
+    
+    if ( --powerup_timer <= 0 ) {
+        powerup_timer = Random(SEC_TO_TICKS(15), SEC_TO_TICKS(25));
+        Powerup * powerup = new Powerup();
+        entities.append(powerup);
+    }
+}
+
+
 void Game::updateGame(InputState input_state[MAX_PLAYERS], float dt)
 {
     black_hole->emitParticles(3, DOS_RED);
     particles.update(dt);
 
     if ( paused || menu_is_open ) {
-        black_hole->update(dt);
+        black_hole->update(dt); // the black hole always updates
         return;
     }
-    
-    // TODO: refactor: TrySpawnPowerup
-    if ( powerups_on ) {
-        if ( ticks > next_powerup_tick ) {
-            next_powerup_tick = ticks + Random(SEC_TO_TICKS(15), SEC_TO_TICKS(25));
-            Powerup * powerup = new Powerup();
-            entities.append(powerup);
-        }
-    }
 
+    trySpawnPowerup();
+    
     for ( int i = 0; i < numPlayers(); i++ ) {
         players[i]->updateFromInputState(input_state[i], dt);
     }
@@ -239,37 +244,9 @@ void Game::updateGame(InputState input_state[MAX_PLAYERS], float dt)
     for ( unsigned i = 0; i <entities.count(); i++ ) {
         entities[i]->update(dt);
     }
-    
-    // TODO: move to BlackHole update
-    // black hole gravity
-    for ( int i = 0; i < num_players; i++ ) {
-        if (players[i]
-            && players[i]->isActive()
-            && players[i]->powerup != POWERUP_ZEROG )
-        {
-            black_hole->exertGravity(players[i], BLACK_HOLE_GRAVITY, dt);
-        }
-    }
-    
-    // TODO: move to player->update
-    // player lasers
-    for ( int i = 0; i < num_players; i++ ) {
-        if ( !players[i]->isActive() ) {
-            continue;
-        }
-        
-        if ( players[i]->powerup == POWERUP_LASER ) {
-            players[i]->emitParticles(1, RANDOM_COLORS);
-            for ( int j = 0; j < num_players; j++ ) {
-                if ( i == j || !players[j]->isActive() ) {
-                    continue;
-                }
-                players[i]->laserPlayer(players[j]);
-            }
-        }
-    }
-    
+            
     // resolve collisions
+    
     int count = entities.count();
     for ( int i = 0; i < count; i++ ) {
         for ( int j = i + 1; j < count; j++ ) {
@@ -279,6 +256,8 @@ void Game::updateGame(InputState input_state[MAX_PLAYERS], float dt)
             }
         }
     }
+    
+    // remove dead stuff
     
     count = entities.count();
     for ( int i = count - 1; i >= 0; i-- ) {
@@ -302,6 +281,23 @@ void Game::run()
     
     if ( is_network_game ) {
         num_players = num_clients + 1;
+        printf("starting network game with %d players\n", num_players);
+        
+        if ( my_id != SERVER_ID ) {
+            window.center();
+        }
+        
+        // sync?
+        if ( my_id == SERVER_ID ) {
+            u8 check;
+            for ( int i = 0; i < num_clients; i++ ) {
+                SDLNet_TCP_Recv(my_socket, &check, sizeof(check));
+            }
+        } else {
+            u8 ready = 1;
+            SDLNet_TCP_Send(my_socket, &ready, sizeof(ready));
+        }
+        
         start();
     }
     
@@ -335,26 +331,34 @@ void Game::run()
                 for ( client_id_t id = 0; id < num_clients; id++ ) {
                     input_states[id + 1] = HostReceiveInputState(id);
                 }
-                if ( input_states[1].shoot ) {
-                    puts("shoot");
-                }
+
                 updateGame(input_states, dt);
                 
                 // send updated game to clients
+                unsigned count = entities.count();
+                for ( int i = 0; i < num_clients; i++ ) {
+                    SDLNet_TCP_Send(clients[i], &count, sizeof(count));
+                    for ( unsigned j = 0; j < count; j++ ) {
+                        SDLNet_TCP_Send(clients[i], entities[i], sizeof(*entities[i]));
+                    }
+                }
             } else {
                 InputState my_input = input.getInputState(0);
                 ClientSendInputState(my_input);
                 clearEntities();
-                // recv updated game from host
+                unsigned count;
+                SDLNet_TCP_Recv(my_socket, &count, sizeof(count));
+                for ( unsigned i = 0; i < count; i++ ) {
+                    SDLNet_TCP_Recv(my_socket, entities[i], sizeof(*entities[i]));
+                }
             }
         } else {
             for ( int i = 0; i < num_players; i++ ) {
                 input_states[i] = input.getInputState(i);
             }
-            
             updateGame(input_states, dt);
         }
-                
+        
         drawGame();
     }
     

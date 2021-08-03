@@ -4,6 +4,7 @@
 #include "player.h"
 #include "bullet.h"
 #include "random.h"
+#include "game.h"
 
 #define BLACK_HOLE_FILE "black_hole.png"
 
@@ -81,6 +82,14 @@ void BlackHole::update(float dt)
             move_timer += MS_TO_TICKS(1000);
         }
     }
+    
+    for ( int i = 0; i < game.numPlayers(); i++ ) {
+        Player * pl = game.players[i];
+        if ( pl && pl->isActive() && pl->powerup != POWERUP_ZEROG ) {
+            exertGravity(game.players[i], BLACK_HOLE_GRAVITY, dt);
+        }
+    }
+
 }
 
 

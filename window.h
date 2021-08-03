@@ -20,6 +20,9 @@ public:
     int getWidth(void);
     int getHeight(void);
     SDL_Rect getSize(void);
+    void setSize(int width, int height);
+    void setPosition(int x, int y);
+    void center(void);
     void toggleFullscreen(void);
     bool isFullscreen(void) { return is_fullscreen; };
     
