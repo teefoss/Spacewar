@@ -23,6 +23,7 @@ static PowerupInfo powerup_info[NUM_POWERUPS] = {
     { 0, false }, // nuke
 };
 
+
 Powerup::Powerup()
 : Entity(ENTITY_POWERUP, Vec2(0, 0), 5.5f, "powerups.png")
 {
@@ -30,27 +31,11 @@ Powerup::Powerup()
     position.y = Random(HUD_MARGIN, GAME_H - HUD_MARGIN);
     color = (DOS_Color)Random(DOS_GRAY, DOS_NUMCOLORS);
     //type = (PowerupType)Random(1, NUM_POWERUPS);
-    type = POWERUP_LASER; // TEMP: debug
+    type = POWERUP_SHOWPATH; // TEMP: debug
     
     PowerupInfo * info = &powerup_info[type];
     lifespan = info->disappears ? MS_TO_TICKS(25000) : -1;
     effect_time = info->effect_time;
-}
-
-
-Data Powerup::data()
-{
-    Data d;
-    d.buffer = malloc(sizeof(PowerupData));
-    d.size = sizeof(PowerupData);
-
-    PowerupData * buf = (PowerupData *)d.buffer;
-    buf->entity_data = Entity::entityData();
-    buf->type = type;
-    buf->effect_time = effect_time;
-    buf->lifespan = lifespan;
-    
-    return d;
 }
 
 

@@ -15,6 +15,8 @@ void NetInit(int argc, char ** argv);
 void NetQuit(void);
 void ClientSendInputState(InputState input_state);
 InputState HostReceiveInputState(client_id_t id);
+void NetSendToAllClients(void * data, int len);
+void NetSendToClient(client_id_t id, void * data, int len);
 
 extern bool is_network_game;
 extern client_id_t num_clients;

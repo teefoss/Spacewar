@@ -15,46 +15,6 @@ BlackHole::BlackHole()
     move = false;
 }
 
-Data BlackHole::data()
-{
-    Data d;
-    d.buffer = malloc(sizeof(BlackHoleData));
-    d.size = sizeof(BlackHoleData);
-
-    BlackHoleData * buf = (BlackHoleData *)d.buffer;
-    buf->entity_data = Entity::entityData();
-    buf->move_timer = move_timer;
-    buf->move = move;
-    
-    return d;
-}
-
-//typedef struct
-//{
-//    Vec2 velocity;
-//    Vec2 position;
-//    Vec2 orientation;
-//    float angle;
-//    u8 alive;
-//} EntityData;
-
-
-BlackHole::BlackHole(Data * data)
-: Entity(ENTITY_BLACK_HOLE, Vec2(0, 0), BLACK_HOLE_RADIUS, BLACK_HOLE_FILE)
-{
-    BlackHoleData * buf = (BlackHoleData *)data->buffer;
-    
-    velocity = buf->entity_data.velocity;
-    position = buf->entity_data.position;
-    orientation = buf->entity_data.orientation;
-    angle = buf->entity_data.angle;
-    alive = buf->entity_data.alive;
-    
-    
-    move_timer = buf->move_timer;
-    move = buf->move;
-}
-
 
 void BlackHole::update(float dt)
 {
@@ -72,7 +32,6 @@ void BlackHole::update(float dt)
         
         // move back if too from the center
         
-        Vec2 center = Vec2(GAME_W / 2, GAME_H / 2);
         Vec2 v = position - center;
         
         if ( v.length() > GAME_H / 2 ) {

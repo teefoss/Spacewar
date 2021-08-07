@@ -2,6 +2,7 @@ TARGET	= $(shell basename $(CURDIR))
 CPP		= clang++
 CC		= clang
 CFLAGS	= -Wall -Wextra -Werror -Wshadow -g
+DIAGOPT = -fno-show-column -fno-caret-diagnostics
 %DIR	= /Users/tomf/dev
 LIBS	= -Llib
 INCL	= -Iinclude
@@ -10,6 +11,8 @@ SRC		= $(wildcard *.cc)
 OBJ_DIR = ./obj
 OBJ		= $(SRC:%.cc=$(OBJ_DIR)/%.o)
 COBJ	= $(OBJ_DIR)/random.o
+
+CFLAGS += $(DIAGOPT)
 
 all: $(TARGET)
 

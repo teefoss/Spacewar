@@ -145,3 +145,29 @@ InputState HostReceiveInputState(client_id_t id)
     SDLNet_TCP_Recv(clients[id], &state, sizeof(state));
     return state;
 }
+
+
+void NetSend(void * data, int len)
+{
+    SDLNet_TCP_Send(my_socket, data, len);
+}
+
+
+void NetReceive(void * data, int len)
+{
+    SDLNet_TCP_Recv(my_socket, data, len);
+}
+
+
+void NetSendToAllClients(void * data, int len)
+{
+    for ( client_id_t id = 0; id < num_clients; id++ ) {
+        NetSendToClient(id, data, len);
+    }
+}
+
+
+void NetSendToClient(client_id_t id, void * data, int len)
+{
+    SDLNet_TCP_Send(clients[id], data, len);
+}

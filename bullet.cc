@@ -18,27 +18,6 @@ Bullet::Bullet(Vec2 position, int who_shot)
 }
 
 
-Data Bullet::data()
-{
-    Data d;
-    d.buffer = malloc(sizeof(BulletData));
-    d.size = sizeof(BulletData);
-
-    BulletData * buf = (BulletData *)d.buffer;
-    buf->entity_data = Entity::entityData();
-    buf->player_index = player_index;
-    
-    return d;
-}
-
-
-void Bullet::draw(SDL_Renderer * renderer)
-{
-    Entity::drawSprite(renderer, player_index);
-}
-
-
-
 void Bullet::update(float dt)
 {
     updatePosition(dt, false);
@@ -48,6 +27,11 @@ void Bullet::update(float dt)
     }
 }
 
+
+void Bullet::draw(SDL_Renderer * renderer)
+{
+    Entity::drawSprite(renderer, player_index);
+}
 
 
 void Bullet::contact(Entity * hit)

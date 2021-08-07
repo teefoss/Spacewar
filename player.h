@@ -21,20 +21,6 @@ struct PlayerState
     virtual void processInput(void) = 0; // TODO: ?
 };
 
-typedef struct
-{
-    EntityData entity_data;
-    u8 number;
-    u8 num_lives;
-    u8 num_bullets;
-    u8 powerup;
-    u8 shield_strength;
-    u8 shield_up;
-    u8 respawn_timer;
-    u8 shoot_cooldown_timer;
-    u8 bullet_recharge_timer;
-    u8 powerup_timer;
-} PlayerData;
 
 class Player : public Entity
 {
@@ -46,7 +32,6 @@ public:
     void updateFromInputState(InputState input_state, float dt);
     void draw(SDL_Renderer * renderer) override;
     void contact(Entity * hit) override;
-    Data data(void) override;
     
     bool isActive(void);
     void explode(int dos_color);
@@ -59,12 +44,12 @@ public:
     void explosionSound(void);
     void renderHUD(SDL_Renderer * renderer);
     
-    int number;
-    int num_lives; // TODO: need a kill function
-    int num_bullets;
+    u8 number;
+    s8 num_lives; // TODO: need a kill function
+    s8 num_bullets;
     DOS_Color color;
     PowerupType powerup;
-    int shield_strength;
+    s8 shield_strength;
     bool shield_up;
     
 private:
@@ -75,16 +60,15 @@ private:
     void setPowerupEffect(Powerup * powerup);
     void makeHUDTexture(SDL_Renderer * renderer);
 
-    int respawn_timer;
-    int shoot_cooldown_timer;
-    int bullet_recharge_timer;
-    int powerup_timer; // powerup active if > 0
+    s16 respawn_timer;
+    s16 shoot_cooldown_timer;
+    s16 bullet_recharge_timer;
+    s16 powerup_timer; // powerup active if > 0
 
-    Vec2 initial_position;
-    Cardinal initial_direction;
+    Vec2 initial_position; // store this information elsewhere and look it up: pl num
+    Cardinal initial_direction; // "
     
-    SDL_Rect hud_rect;
-    SDL_Texture * hud_texture;
+    SDL_Rect hud_rect; // store this elsewhere or calculate it based on pl num
 };
 
 #endif /* player_h */

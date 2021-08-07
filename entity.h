@@ -27,20 +27,6 @@ typedef enum
     ENTITY_POWERUP,
 } EntityType;
 
-typedef struct
-{
-    void * buffer;
-    size_t size;
-} Data;
-
-typedef struct
-{
-    Vec2 velocity;
-    Vec2 position;
-    Vec2 orientation;
-    float angle;
-    u8 alive;
-} EntityData;
 
 class Entity
 {
@@ -56,8 +42,7 @@ public:
     virtual void draw(SDL_Renderer * renderer) = 0;
     virtual void update(float dt) = 0;
     virtual void contact(Entity * hit) = 0;
-    virtual Data data(void) = 0;
-    EntityData entityData(void);
+    size_t size(void);
     
     void emitParticles(int count, int dos_color);
     void exertGravity(Entity * obj, float gravity, float dt);
@@ -70,7 +55,7 @@ public:
     
 protected:
     void updatePosition(float dt, bool wrap);
-    void drawSprite(SDL_Renderer * renderer, int sprite = 0);
+    void drawSprite(SDL_Renderer * renderer, int cell_x = 0, int cell_y = 0);
     void setOrientation(Cardinal direction);
     Vec2 randomPointWithinRange(float range);
 

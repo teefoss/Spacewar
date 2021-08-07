@@ -16,8 +16,9 @@ typedef struct
     DOS_Color   color;
 } PlayerInfo;
 
-const int player_right = GAME_W - PLAYER_MARGIN;
-const int player_bottom = GAME_H - PLAYER_MARGIN;
+static const int player_right = GAME_W - PLAYER_MARGIN;
+static const int player_bottom = GAME_H - PLAYER_MARGIN;
+static SDL_Texture * hud_texture;
 
 const PlayerInfo player_info[MAX_PLAYERS] =
 {
@@ -97,6 +98,8 @@ Player::Player(int index)
     }
     
     SDL_SetTextureBlendMode(hud_texture, SDL_BLENDMODE_BLEND);
+    
+    printf("size of player: %zu\n", size());
 }
 
 
@@ -104,28 +107,6 @@ Player::Player(int index)
 Player::~Player()
 {
     SDL_DestroyTexture(hud_texture);
-}
-
-
-Data Player::data()
-{
-    Data d;
-    d.buffer = malloc(sizeof(PlayerData));
-    d.size = sizeof(PlayerData);
-
-    PlayerData * buf = (PlayerData *)d.buffer;
-    buf->number = number;
-    buf->num_lives = num_lives;
-    buf->num_bullets = num_bullets;
-    buf->powerup = powerup;
-    buf->shield_strength = shield_strength;
-    buf->shield_up = shield_up;
-    buf->respawn_timer = respawn_timer;
-    buf->shoot_cooldown_timer = shoot_cooldown_timer;
-    buf->bullet_recharge_timer = bullet_recharge_timer;
-    buf->powerup_timer = powerup_timer;
-    
-    return d;
 }
 
 
@@ -254,7 +235,7 @@ void Player::shootBullet()
             bullet->velocity.rotateByDegrees(10);
         }
         
-        game.entities.append(bullet);
+        game.entities.push_back(bullet);
     }
         
     shoot_cooldown_timer = SHOT_DELAY;
@@ -506,7 +487,7 @@ void Player::eatPowerup(Powerup * pup)
             // TODO: make sure this all works
             RandomizedSound(120, 100, 2000);
 
-            for ( unsigned i = 0; i < game.entities.count(); i++ ) {
+            for ( int i = 0; i < (int)game.entities.size(); i++ ) {
                 // draw line
                 switch ( game.entities[i]->type ) {
                     case ENTITY_PLAYER: {

@@ -9,6 +9,9 @@
 #include "stars.h"
 #include "log.h"
 #include "net.h"
+#include "bullet.h"
+#include "blackhole.h"
+#include "player.h"
 
 #include <stdlib.h>
 #include <SDL2/SDL_net.h>
@@ -31,7 +34,9 @@ void Game::init()
 
     // blackhole appears on title screen
     black_hole = new BlackHole();
-    entities.append(black_hole);
+    entities.push_back(black_hole);
+    
+    printf("size of black hole: %zu\n", black_hole->size());
     
 #if DEBUG_DATA
     con = DOS_NewConsole(renderer->SDL(), GAME_W/2, GAME_H/8, DOS_MODE40);
@@ -56,11 +61,11 @@ void Game::quit()
 
 void Game::clearEntities()
 {
-    for ( unsigned i = 0; i < entities.count(); i++ ) {
+    for ( unsigned i = 0; i < entities.size(); i++ ) {
         delete entities[i];
     }
     
-    entities.empty();
+    entities.clear();
 }
 
 
@@ -72,11 +77,11 @@ void Game::start()
     clearEntities();
         
     black_hole = new BlackHole();
-    entities.append(black_hole);
+    entities.push_back(black_hole);
     
     for ( int i = 0; i < num_players; i++ ) {
         players[i] = new Player(i);
-        entities.append(players[i]);
+        entities.push_back(players[i]);
     }
 }
 
@@ -189,7 +194,7 @@ void Game::drawGame()
 
     particles.draw(renderer);
     
-    for ( unsigned i = 0; i < entities.count(); i++ ) {
+    for ( unsigned i = 0; i < entities.size(); i++ ) {
         entities[i]->draw(renderer);
     }
         
@@ -220,7 +225,7 @@ void Game::trySpawnPowerup()
     if ( --powerup_timer <= 0 ) {
         powerup_timer = Random(SEC_TO_TICKS(15), SEC_TO_TICKS(25));
         Powerup * powerup = new Powerup();
-        entities.append(powerup);
+        entities.push_back(powerup);
     }
 }
 
@@ -241,13 +246,13 @@ void Game::updateGame(InputState input_state[MAX_PLAYERS], float dt)
         players[i]->updateFromInputState(input_state[i], dt);
     }
     
-    for ( unsigned i = 0; i <entities.count(); i++ ) {
+    for ( unsigned i = 0; i <entities.size(); i++ ) {
         entities[i]->update(dt);
     }
             
     // resolve collisions
     
-    int count = entities.count();
+    int count = (int)entities.size();
     for ( int i = 0; i < count; i++ ) {
         for ( int j = i + 1; j < count; j++ ) {
             if ( entities[i]->isColliding(entities[j]) ) {
@@ -259,11 +264,11 @@ void Game::updateGame(InputState input_state[MAX_PLAYERS], float dt)
     
     // remove dead stuff
     
-    count = entities.count();
-    for ( int i = count - 1; i >= 0; i-- ) {
+    count = (int)entities.size();
+    for ( int i = (int)count - 1; i >= 0; i-- ) {
         if ( !entities[i]->alive ) {
             delete entities[i];
-            entities.remove(i);
+            entities.erase(entities.begin() + i);
         }
     }
 }
@@ -324,8 +329,11 @@ void Game::run()
         
         InputState input_states[MAX_PLAYERS];
         
+        // TODO: this is a total bollocking mess
+        
         if ( is_network_game ) {
             if ( my_id == SERVER_ID ) {
+                
                 // get input from myself and clients
                 input_states[0] = input.getInputState(0); // get my own state
                 for ( client_id_t id = 0; id < num_clients; id++ ) {
@@ -335,21 +343,78 @@ void Game::run()
                 updateGame(input_states, dt);
                 
                 // send updated game to clients
-                unsigned count = entities.count();
-                for ( int i = 0; i < num_clients; i++ ) {
-                    SDLNet_TCP_Send(clients[i], &count, sizeof(count));
-                    for ( unsigned j = 0; j < count; j++ ) {
-                        SDLNet_TCP_Send(clients[i], entities[i], sizeof(*entities[i]));
+                for ( client_id_t id = 0; id < num_clients; id++ ) {
+                    
+                    // send clients number of entities
+                    u16 count = (u16)entities.size();
+                    SDLNet_TCP_Send(clients[id], &count, sizeof(count));
+                    
+                    for ( u16 i = 0; i < count; i++ ) {
+                        
+                        // send them the type
+                        u8 type = (u8)entities[i]->type;
+                        SDLNet_TCP_Send(clients[id], &type, sizeof(type));
+                        
+                        switch ( entities[i]->type ) {
+                            case ENTITY_BLACK_HOLE:
+                                SDLNet_TCP_Send(clients[id], entities[i], sizeof(BlackHole));
+                                break;
+                            case ENTITY_PLAYER:
+                                SDLNet_TCP_Send(clients[id], entities[i], sizeof(Player));
+                                break;
+                            case ENTITY_BULLET:
+                                SDLNet_TCP_Send(clients[id], entities[i], sizeof(Bullet));
+                                break;
+                            case ENTITY_POWERUP:
+                                SDLNet_TCP_Send(clients[id], entities[i], sizeof(Powerup));
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
+                
             } else {
                 InputState my_input = input.getInputState(0);
                 ClientSendInputState(my_input);
+                
+                // get updated game from server
                 clearEntities();
-                unsigned count;
-                SDLNet_TCP_Recv(my_socket, &count, sizeof(count));
-                for ( unsigned i = 0; i < count; i++ ) {
-                    SDLNet_TCP_Recv(my_socket, entities[i], sizeof(*entities[i]));
+                u16 num_entities;
+                SDLNet_TCP_Recv(my_socket, &num_entities, sizeof(num_entities));
+                
+                for ( u16 i = 0; i < num_entities; i++ ) {
+                    u8 type;
+                    SDLNet_TCP_Recv(my_socket, &type, sizeof(type));
+                    void * data = NULL;
+                    switch ( (EntityType)type ) {
+                        case ENTITY_BLACK_HOLE: {
+                            data = malloc(sizeof(BlackHole));
+                            SDLNet_TCP_Recv(my_socket, &data, sizeof(BlackHole));
+                            entities.push_back((BlackHole *)data);
+                            break;
+                        }
+                        case ENTITY_PLAYER: {
+                            data = malloc(sizeof(Player));
+                            SDLNet_TCP_Recv(my_socket, &data, sizeof(Player));
+                            entities.push_back((Player *)data);
+                            break;
+                        }
+                        case ENTITY_BULLET: {
+                            data = malloc(sizeof(Bullet));
+                            SDLNet_TCP_Recv(my_socket, &data, sizeof(Bullet));
+                            entities.push_back((Bullet *)data);
+                            break;
+                        }
+                        case ENTITY_POWERUP: {
+                            data = malloc(sizeof(Powerup));
+                            SDLNet_TCP_Recv(my_socket, &data, sizeof(Powerup));
+                            entities.push_back((Powerup *)data);
+                            break;
+                        }
+                        default:
+                            break;
+                    }
                 }
             }
         } else {

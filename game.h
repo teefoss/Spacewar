@@ -28,7 +28,7 @@ public:
     
     Window window = Window(GAME_NAME, GAME_W*2, GAME_H*2, 0, 0);
     SDL_Renderer * renderer;
-    Storage<Entity *> entities;
+    std::vector<Entity *> entities;
     Player * players[MAX_PLAYERS] = { NULL };
     bool running = true;
     bool paused = false;

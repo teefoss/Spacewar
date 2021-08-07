@@ -34,16 +34,9 @@ Entity::~Entity()
 }
 
 
-EntityData Entity::entityData()
+size_t Entity::size()
 {
-    EntityData entity_data;
-    entity_data.velocity = velocity;
-    entity_data.position = position;
-    entity_data.orientation = orientation;
-    entity_data.angle = angle;
-    entity_data.alive = alive;
-    
-    return entity_data;
+    return sizeof(*this);
 }
 
 
@@ -71,7 +64,7 @@ void Entity::rotateByDegrees(float degrees)
 
 
 
-void Entity::drawSprite(SDL_Renderer * renderer, int sprite)
+void Entity::drawSprite(SDL_Renderer * renderer, int cell_x, int cell_y)
 {
     int diameter = (int)(radius * 2.0f);
     
@@ -82,8 +75,8 @@ void Entity::drawSprite(SDL_Renderer * renderer, int sprite)
     dst.h = diameter;
 
     SDL_Rect src;
-    src.x = diameter * sprite;
-    src.y = 0;
+    src.x = diameter * cell_x;
+    src.y = diameter * cell_y;
     src.w = diameter;
     src.h = diameter;
     
