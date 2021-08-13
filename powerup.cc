@@ -67,3 +67,9 @@ void Powerup::contact(Entity * hit)
             break;
     }
 }
+
+
+int Powerup::size()
+{
+    return (int)sizeof(*this);
+}

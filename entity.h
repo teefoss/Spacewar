@@ -19,13 +19,13 @@ typedef enum
     CARDINAL_NORTHEAST  = 315
 } Cardinal;
 
-typedef enum
+enum EntityType : u8
 {
     ENTITY_BLACK_HOLE,
     ENTITY_PLAYER,
     ENTITY_BULLET,
     ENTITY_POWERUP,
-} EntityType;
+};
 
 
 class Entity
@@ -42,16 +42,18 @@ public:
     virtual void draw(SDL_Renderer * renderer) = 0;
     virtual void update(float dt) = 0;
     virtual void contact(Entity * hit) = 0;
-    size_t size(void);
+    virtual int size(void) = 0;
     
     void emitParticles(int count, int dos_color);
     void exertGravity(Entity * obj, float gravity, float dt);
     bool isColliding(Entity * other);
     void rotateByDegrees(float degrees);
+    void loadTexture(const char * filename);
+    const char * getTextureName(void);
     
     Vec2 velocity;
     EntityType type;
-    bool alive;
+    boolean alive = true;
     
 protected:
     void updatePosition(float dt, bool wrap);
@@ -63,8 +65,6 @@ protected:
     Vec2 orientation;
     float radius;
     float angle; // for renderering, orientation angle in degrees
-    
-private:
     const char * texture_name; // (file name)
     SDL_Texture * texture;
 };

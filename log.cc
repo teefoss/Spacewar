@@ -1,16 +1,20 @@
 #include "log.h"
+#include "defines.h"
 
 FILE * Log::log = NULL;
 
 
-bool Log::create(const char * path)
+void Log::create(const char * path)
 {
     if ( log ) {
         destroy();
     }
+    
     log = fopen(path, "w");
     
-    return log != NULL;
+    if ( log == NULL ) {
+        ERROR("Failed to create log");
+    }
 }
 
 

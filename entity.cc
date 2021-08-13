@@ -5,7 +5,7 @@
 #include "utility.h"
 #include "defines.h"
 #include "resources.h"
-#include "game.h"
+#include "app.h"
 
 Entity::Entity
 (   EntityType type,
@@ -17,13 +17,12 @@ Entity::Entity
     this->type = type;
     this->position = origin;
     this->radius = radius;
-    this->velocity.zero();
-    setOrientation(direction);
-    this->texture_name = texture_name;
-    this->alive = true;
     
-    ResourceManager& rm = ResourceManager::shared();
-    texture = rm.getTexture(texture_name, game.renderer);
+    velocity.zero();
+    setOrientation(direction);
+    
+    this->texture_name = texture_name;
+    loadTexture(texture_name);
 }
 
 
@@ -34,9 +33,16 @@ Entity::~Entity()
 }
 
 
-size_t Entity::size()
+void Entity::loadTexture(const char * filename)
 {
-    return sizeof(*this);
+    SDL_Renderer * renderer = App::shared()->getRenderer();
+    texture = ResourceManager::shared().getTexture(filename, renderer);
+}
+
+
+const char * Entity::getTextureName()
+{
+    return texture_name;
 }
 
 

@@ -18,33 +18,25 @@ class Game
 public:
     Game() { };
     ~Game() { };
-    void init(void);
-    void run(void);
+    void init(SDL_Window * window);
     void start(void);
     void quit(void);
     int maxPlayers(void);
     void setNumPlayers(int n);
     int numPlayers(void);
-    
-    Window window = Window(GAME_NAME, GAME_W*2, GAME_H*2, 0, 0);
-    SDL_Renderer * renderer;
+    void update(InputState input_state[MAX_PLAYERS], float dt);
+    void draw(SDL_Renderer * renderer);
+
     std::vector<Entity *> entities;
     Player * players[MAX_PLAYERS] = { NULL };
-    bool running = true;
     bool paused = false;
     bool match_started = false;
-    int ticks = 0;
     int num_players = 2;
-    int aliens_on = true;
+    int aliens_on = true; // TODO: game options struct
     int powerups_on = true;
     int black_hole_moves = false;
     
 private:
-    bool processEvent(SDL_Event * event);
-    bool processKey(SDL_Keycode key);
-    void processPlayerInput(float dt);
-    void updateGame(InputState input_state[MAX_PLAYERS], float dt);
-    void drawGame(void);
     void clearEntities(void);
     void trySpawnPowerup(void);
     

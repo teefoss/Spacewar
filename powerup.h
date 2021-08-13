@@ -2,8 +2,9 @@
 #define powerup_h
 
 #include "entity.h"
+#include "types.h"
 
-enum PowerupType
+enum PowerupType : u8
 {
     POWERUP_NONE,
     POWERUP_MULTISHOT,
@@ -25,10 +26,11 @@ public:
     void update(float dt) override;
     void draw(SDL_Renderer * renderer) override;
     void contact(Entity * hit) override;
+    int size(void) override;
 
     PowerupType type;
-    int effect_time; // how long the player has it for
-    int lifespan; // how long before it disappears
+    s16 effect_time; // how long the player has it for
+    s16 lifespan; // how long before it disappears
     
 private:
     DOS_Color color;

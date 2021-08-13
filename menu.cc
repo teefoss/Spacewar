@@ -2,6 +2,7 @@
 #include "defines.h"
 #include "game.h"
 #include "input.h"
+#include "app.h"
 
 #include <stdlib.h>
 #include <dos.h>
@@ -180,7 +181,8 @@ int PreviousMenu(void)
 
 void InitMenu()
 {
-    con = DOS_NewConsole(game.renderer, 64, 20, DOS_MODE80);
+    SDL_Renderer * renderer = App::shared()->getRenderer();
+    con = DOS_NewConsole(renderer, 64, 20, DOS_MODE80);
     DOS_CSetCursorType(con, DOS_CURSOR_NONE);
     current = &main_menu;
     
@@ -231,6 +233,7 @@ void MenuUp()
     }
 }
 
+
 static void CycleNumPlayers()
 {
     int n = game.numPlayers() + 1;
@@ -249,7 +252,7 @@ bool ProcessMenuKey(SDL_Keycode key)
     
     switch ( key ) {
         case SDLK_BACKSLASH:
-            game.window.toggleFullscreen();
+            App::shared()->toggleFullscreen();
             break;
         case SDLK_DOWN:
             MenuScrollSound();
@@ -284,7 +287,7 @@ bool ProcessMenuKey(SDL_Keycode key)
 }
 
 
-bool ProcessMenuControllerButton(uint16_t button)
+bool ProcessMenuControllerButton(u16 button)
 {
     switch ( button ) {
         case SDL_CONTROLLER_BUTTON_DPAD_UP:

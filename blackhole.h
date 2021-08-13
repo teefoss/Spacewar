@@ -12,13 +12,14 @@ public:
     void update(float dt) override;
     void draw(SDL_Renderer * renderer) override;
     void contact(Entity * hit) override;
+    int size(void) override;
     
     void setMove(bool value);
     bool isMoving() { return move; };
     
 private:
-    int move_timer;
-    bool move;
+    s16 move_timer;
+    boolean move;
 };
 
 #endif /* blackhole_h */

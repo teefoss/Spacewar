@@ -6,18 +6,17 @@
 #include "bullet.h"
 #include "particle.h"
 #include "game.h"
+#include "app.h"
 
 #include <dos.h>
 
-typedef struct
-{
-    Vec2        position;
-    Cardinal    direction;
-    DOS_Color   color;
-} PlayerInfo;
-
 static const int player_right = GAME_W - PLAYER_MARGIN;
 static const int player_bottom = GAME_H - PLAYER_MARGIN;
+static const int player_diameter = PLAYER_RADIUS * 2;
+
+#define HUD_WIDTH   (MAX_LIVES * player_diameter + MAX_LIVES * 2)
+#define HUD_HEIGHT  (player_diameter + 10)
+
 static SDL_Texture * hud_texture;
 
 const PlayerInfo player_info[MAX_PLAYERS] =
@@ -27,24 +26,43 @@ const PlayerInfo player_info[MAX_PLAYERS] =
         .position = Vec2(PLAYER_MARGIN, PLAYER_MARGIN),
         .direction = CARDINAL_SOUTHEAST,
         .color = DOS_BRIGHT_GREEN,
+        .hud_rect = { HUD_MARGIN, HUD_MARGIN, HUD_WIDTH, HUD_HEIGHT }
     },
     // PLAYER 1 [1] LOWER RIGHT
     {
         .position = Vec2(player_right, player_bottom),
         .direction = CARDINAL_NORTHWEST,
         .color = DOS_YELLOW,
+        .hud_rect = {
+            GAME_W - HUD_MARGIN - HUD_WIDTH,
+            GAME_H - HUD_MARGIN - HUD_HEIGHT,
+            HUD_WIDTH,
+            HUD_HEIGHT
+        }
     },
     // PLAYER 3 [2] LOWER LEFT
     {
         .position = Vec2(PLAYER_MARGIN, player_bottom),
         .direction = CARDINAL_NORTHEAST,
         .color = DOS_BRIGHT_CYAN,
+        .hud_rect = {
+            HUD_MARGIN,
+            GAME_H - HUD_MARGIN - HUD_HEIGHT,
+            HUD_WIDTH,
+            HUD_HEIGHT
+        }
     },
     // PLAYER 4 [3] UPPER RIGHT
     {
         .position = Vec2(player_right, PLAYER_MARGIN),
         .direction = CARDINAL_SOUTHWEST,
         .color = DOS_BRIGHT_MAGENTA,
+        .hud_rect = {
+            GAME_W - HUD_MARGIN - HUD_WIDTH,
+            HUD_MARGIN,
+            HUD_WIDTH,
+            HUD_HEIGHT
+        }
     },
 };
 
@@ -53,60 +71,34 @@ const PlayerInfo player_info[MAX_PLAYERS] =
 Player::Player(int index)
 : Entity(ENTITY_PLAYER, Vec2(0, 0), PLAYER_RADIUS, "ships.png")
 {
-    const PlayerInfo * info = &player_info[index];
-    color = info->color;
-    initial_position = info->position;
-    initial_direction = info->direction;
-    resetPosition();
-
     number = index;
-    respawn_timer = 0;
-    shoot_cooldown_timer = 0;
-    powerup_timer = 0;
-    powerup = POWERUP_NONE;
-    num_bullets = MAX_BULLETS;
-    num_lives = MAX_LIVES;
-    shield_up = false;
-    shield_strength = MAX_SHIELD_STRENGTH;
     
-    // init HUD
-    
-    int diam = (int)(radius * 2.0f);
-    hud_rect.w = MAX_LIVES * diam + MAX_LIVES * 2;
-    hud_rect.h = diam + 10;
-    
-    if ( number == 0 || number == 2 ) {
-        hud_rect.x = HUD_MARGIN;
-    } else {
-        hud_rect.x = GAME_W - HUD_MARGIN - hud_rect.w;
-    }
-    
-    if ( number == 0 || number == 3 ) {
-        hud_rect.y = HUD_MARGIN;
-    } else {
-        hud_rect.y = GAME_H - HUD_MARGIN - hud_rect.h;
-    }
-    
-    hud_texture = SDL_CreateTexture(game.renderer,
+    resetPosition();
+        
+    SDL_Renderer * renderer = App::shared()->getRenderer();
+    hud_texture = SDL_CreateTexture(renderer,
                                     SDL_PIXELFORMAT_RGBA8888,
                                     SDL_TEXTUREACCESS_TARGET,
-                                    hud_rect.w,
-                                    hud_rect.h);
+                                    HUD_WIDTH,
+                                    HUD_HEIGHT);
     if ( hud_texture == NULL ) {
         fprintf(stderr, "could not create ship HUD texture\n");
         exit(EXIT_FAILURE);
     }
     
     SDL_SetTextureBlendMode(hud_texture, SDL_BLENDMODE_BLEND);
-    
-    printf("size of player: %zu\n", size());
 }
-
 
 
 Player::~Player()
 {
     SDL_DestroyTexture(hud_texture);
+}
+
+
+int Player::size()
+{
+    return (int)sizeof(*this);
 }
 
 
@@ -139,14 +131,14 @@ void Player::makeHUDTexture(SDL_Renderer * renderer)
     for ( int i = 0; i < 2; i++ ) {
         bar[i].x = 0;
         bar[i].y = ship_diam + margin;
-        bar[i].w = hud_rect.w - margin;
+        bar[i].w = HUD_WIDTH - margin;
         bar[i].h = 3;
     }
     bar[1].w *= (float)shield_strength / (float)MAX_SHIELD_STRENGTH;
 
     DOS_SetColor(renderer, DOS_GRAY);
     SDL_RenderFillRect(renderer, &bar[0]);
-    DOS_SetColor(renderer, color);
+    DOS_SetColor(renderer, player_info[number].color);
     SDL_RenderFillRect(renderer, &bar[1]);
     
     // bullets
@@ -155,7 +147,7 @@ void Player::makeHUDTexture(SDL_Renderer * renderer)
     src = (SDL_Rect){ number * bullet_diam, 0, bullet_diam, bullet_diam };
     dst = (SDL_Rect){ 0, bar[0].y + bar[0].h + margin, bullet_diam, bullet_diam };
     
-    DOS_SetColor(renderer, color);
+    DOS_SetColor(renderer, player_info[number].color);
     for ( int i = 0; i < num_bullets; i++ ) {
         SDL_RenderCopy(renderer, bullet_texture, &src, &dst);
         dst.x += bullet_diam + margin;
@@ -180,7 +172,8 @@ void Player::renderHUD(SDL_Renderer * renderer)
         flip = SDL_FLIP_NONE;
     }
 
-    SDL_RenderCopyEx(renderer, hud_texture, NULL, &hud_rect, 0, NULL, flip);
+    const SDL_Rect * dst = &player_info[number].hud_rect;
+    SDL_RenderCopyEx(renderer, hud_texture, NULL, dst, 0, NULL, flip);
 }
 
 
@@ -204,9 +197,9 @@ void Player::rotateByDegrees(float degrees)
 
 void Player::resetPosition()
 {
-    position = initial_position;
+    position = player_info[number].position;
     velocity.zero();
-    setOrientation(initial_direction);
+    setOrientation(player_info[number].direction);
 }
 
 
@@ -372,7 +365,7 @@ void Player::laserPlayer(Player * other_player)
                                 other_player->position,
                                 other_player->radius) )
     {
-        other_player->explode(other_player->color);
+        other_player->explode(player_info[other_player->number].color);
         other_player->explosionSound();
     }
 }
@@ -406,6 +399,7 @@ void Player::draw(SDL_Renderer * renderer)
                 break;
             }
             case POWERUP_SHOWPATH: {
+                DOS_Color color = player_info[number].color;
                 DOS_SetColor(renderer, (DOS_Color)((int)color - 8));
                 Vec2 pos = position;
                 Vec2 vel = velocity;
@@ -580,7 +574,7 @@ void Player::thrust(float dt)
     exhaust_v.normalize();
     exhaust_v.rotateByDegrees(180);
     exhaust_v *= 100.0f;
-    SDL_Color sdl_color = DOS_CGAColorToSDLColor(color);
+    SDL_Color sdl_color = DOS_CGAColorToSDLColor(player_info[number].color);
     int time = Random(0, 50);
     particles.spawn(origin, exhaust_v, time, sdl_color);
 }

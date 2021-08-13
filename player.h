@@ -21,6 +21,14 @@ struct PlayerState
     virtual void processInput(void) = 0; // TODO: ?
 };
 
+typedef struct
+{
+    Vec2        position;
+    Cardinal    direction;
+    DOS_Color   color;
+    SDL_Rect    hud_rect;
+} PlayerInfo;
+
 
 class Player : public Entity
 {
@@ -32,6 +40,7 @@ public:
     void updateFromInputState(InputState input_state, float dt);
     void draw(SDL_Renderer * renderer) override;
     void contact(Entity * hit) override;
+    int size(void) override;
     
     bool isActive(void);
     void explode(int dos_color);
@@ -45,12 +54,11 @@ public:
     void renderHUD(SDL_Renderer * renderer);
     
     u8 number;
-    s8 num_lives; // TODO: need a kill function
-    s8 num_bullets;
-    DOS_Color color;
-    PowerupType powerup;
-    s8 shield_strength;
-    bool shield_up;
+    s8 num_lives = MAX_LIVES; // TODO: need a kill function
+    s8 num_bullets = MAX_BULLETS;
+    PowerupType powerup = POWERUP_NONE;
+    s8 shield_strength = MAX_SHIELD_STRENGTH;
+    boolean shield_up = false;
     
 private:
     void resetPosition(void);
@@ -60,15 +68,12 @@ private:
     void setPowerupEffect(Powerup * powerup);
     void makeHUDTexture(SDL_Renderer * renderer);
 
-    s16 respawn_timer;
-    s16 shoot_cooldown_timer;
-    s16 bullet_recharge_timer;
-    s16 powerup_timer; // powerup active if > 0
-
-    Vec2 initial_position; // store this information elsewhere and look it up: pl num
-    Cardinal initial_direction; // "
-    
-    SDL_Rect hud_rect; // store this elsewhere or calculate it based on pl num
+    s16 respawn_timer = 0;
+    s16 shoot_cooldown_timer = 0;
+    s16 bullet_recharge_timer = 0;
+    s16 powerup_timer = 0; // powerup active if > 0
 };
+
+extern const PlayerInfo player_info[MAX_PLAYERS];
 
 #endif /* player_h */

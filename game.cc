@@ -19,24 +19,11 @@
 Game game = Game();
 const Vec2 center = Vec2(GAME_W / 2, GAME_H / 2);
 
-void Game::init()
+void Game::init(SDL_Window * window)
 {     
-    renderer = SDL_CreateRenderer(window.SDL(), -1, 0);
-    if ( renderer == NULL ) {
-        exit(EXIT_FAILURE);
-    }
-    SDL_RenderSetLogicalSize(renderer, GAME_W, GAME_H);
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
-    InitMenu();
-    input.init(renderer);
-    DOS_InitSound();
-
     // blackhole appears on title screen
     black_hole = new BlackHole();
     entities.push_back(black_hole);
-    
-    printf("size of black hole: %zu\n", black_hole->size());
     
 #if DEBUG_DATA
     con = DOS_NewConsole(renderer->SDL(), GAME_W/2, GAME_H/8, DOS_MODE40);
@@ -54,8 +41,6 @@ void Game::quit()
 #if DEBUG_DATA
     DOS_FreeConsole(con);
 #endif
-    
-    SDL_DestroyRenderer(renderer);
 }
 
 
@@ -113,70 +98,7 @@ int Game::numPlayers()
 }
 
 
-bool Game::processKey(SDL_Keycode key)
-{
-    switch ( key ) {
-        case SDLK_ESCAPE:
-            menu_is_open = !menu_is_open;
-            DOS_QueueSound(1320, 50);
-            DOS_QueueSound(1100, 50);
-            DOS_PlayQueuedSound();
-            break;
-        case SDLK_BACKSLASH:
-            window.toggleFullscreen();
-            break;
-        case SDLK_p:
-            paused = !paused;
-        default:
-            break;
-    }
-    
-    return true;
-}
-
-
-
-bool Game::processEvent(SDL_Event * event)
-{
-    switch ( event->type ) {
-            
-        case SDL_QUIT:
-            return false;
-            
-        case SDL_KEYDOWN:
-            if ( menu_is_open ) {
-                return ProcessMenuKey(event->key.keysym.sym);
-            } else {
-                return processKey(event->key.keysym.sym);
-            }
-            break;
-            
-        case SDL_CONTROLLERDEVICEADDED:
-        case SDL_CONTROLLERDEVICEREMOVED:
-            input.reconnectControllers();
-            break;
-            
-        case SDL_CONTROLLERBUTTONDOWN:
-            if ( event->cbutton.button == SDL_CONTROLLER_BUTTON_START ) {
-                menu_is_open = !menu_is_open;
-            }
-            
-            if ( menu_is_open ) {
-                return ProcessMenuControllerButton(event->cbutton.button);
-            }
-            break;
-            
-        default:
-            break;
-    }
-    
-    return true;
-
-}
-
-
-
-void Game::drawGame()
+void Game::draw(SDL_Renderer * renderer)
 {
     SDL_SetRenderDrawColor(renderer, 16, 16, 16, 255);
     SDL_RenderClear(renderer);
@@ -230,7 +152,7 @@ void Game::trySpawnPowerup()
 }
 
 
-void Game::updateGame(InputState input_state[MAX_PLAYERS], float dt)
+void Game::update(InputState input_state[MAX_PLAYERS], float dt)
 {
     black_hole->emitParticles(3, DOS_RED);
     particles.update(dt);
@@ -273,16 +195,12 @@ void Game::updateGame(InputState input_state[MAX_PLAYERS], float dt)
     }
 }
 
-
-
+// TODO: App::run() instead, remove
+#if 0
 void Game::run()
 {
     static float dt;
     int last_ms = 0;
-
-//    LOG("size of entity: %zu bytes\n", sizeof(Entity));
-//    LOG("size of player: %zu bytes\n", sizeof(Player));
-//    LOG("size of entity data: %zu bytes\n", sizeof(EntityData));
     
     if ( is_network_game ) {
         num_players = num_clients + 1;
@@ -305,6 +223,13 @@ void Game::run()
         
         start();
     }
+
+#if 1
+    LOG("size of player:  %zu bytes\n", sizeof(Player));
+    LOG("size of bl hole: %zu bytes\n", sizeof(BlackHole));
+    LOG("size of bullet:  %zu bytes\n", sizeof(Bullet));
+    LOG("size of pup:     %zu bytes\n", sizeof(Powerup));
+#endif
     
     while ( running ) {
         ticks++;
@@ -340,57 +265,58 @@ void Game::run()
                     input_states[id + 1] = HostReceiveInputState(id);
                 }
 
-                updateGame(input_states, dt);
+                update(input_states, dt);
                 
-                // send updated game to clients
+                // send updated game, for each client:
                 for ( client_id_t id = 0; id < num_clients; id++ ) {
                     
-                    // send clients number of entities
+                    // send  number of entities
                     u16 count = (u16)entities.size();
                     SDLNet_TCP_Send(clients[id], &count, sizeof(count));
                     
+                    // for each entity
                     for ( u16 i = 0; i < count; i++ ) {
                         
-                        // send them the type
-                        u8 type = (u8)entities[i]->type;
-                        SDLNet_TCP_Send(clients[id], &type, sizeof(type));
+                        // send type's size
+                        u8 size = (u8)entities[i]->size();
+                        SDLNet_TCP_Send(clients[id], &size, sizeof(size));
                         
-                        switch ( entities[i]->type ) {
-                            case ENTITY_BLACK_HOLE:
-                                SDLNet_TCP_Send(clients[id], entities[i], sizeof(BlackHole));
-                                break;
-                            case ENTITY_PLAYER:
-                                SDLNet_TCP_Send(clients[id], entities[i], sizeof(Player));
-                                break;
-                            case ENTITY_BULLET:
-                                SDLNet_TCP_Send(clients[id], entities[i], sizeof(Bullet));
-                                break;
-                            case ENTITY_POWERUP:
-                                SDLNet_TCP_Send(clients[id], entities[i], sizeof(Powerup));
-                                break;
-                            default:
-                                break;
-                        }
+                        // send entity
+                        SDLNet_TCP_Send(clients[id], entities[i], size);
                     }
                 }
-                
             } else {
                 InputState my_input = input.getInputState(0);
                 ClientSendInputState(my_input);
                 
                 // get updated game from server
                 clearEntities();
+                
+                // get num entities
                 u16 num_entities;
                 SDLNet_TCP_Recv(my_socket, &num_entities, sizeof(num_entities));
                 
+                // for each entity
                 for ( u16 i = 0; i < num_entities; i++ ) {
-                    u8 type;
-                    SDLNet_TCP_Recv(my_socket, &type, sizeof(type));
-                    void * data = NULL;
+                    
+                    // get entity's type
+                    u8 size;
+                    SDLNet_TCP_Recv(my_socket, &size, sizeof(size));
+
+                    // get entity
+                    void * data = malloc(size);
+                    SDLNet_TCP_Recv(my_socket, data, size);
+                    
+                    // reload texture and put it in
+                    Entity * entity = (Entity *)data;
+                    entity->loadTexture(entity->getTextureName());
+                    entities.push_back(entity);
+#if 0
                     switch ( (EntityType)type ) {
                         case ENTITY_BLACK_HOLE: {
-                            data = malloc(sizeof(BlackHole));
-                            SDLNet_TCP_Recv(my_socket, &data, sizeof(BlackHole));
+                            BlackHole * data = (BlackHole *)malloc(sizeof(*data));
+                            SDLNet_TCP_Recv(my_socket, data, sizeof(*data));
+                            data->loadTexture(data->getTextureName());
                             entities.push_back((BlackHole *)data);
                             break;
                         }
@@ -415,17 +341,19 @@ void Game::run()
                         default:
                             break;
                     }
+#endif
                 }
             }
         } else {
             for ( int i = 0; i < num_players; i++ ) {
                 input_states[i] = input.getInputState(i);
             }
-            updateGame(input_states, dt);
+            update(input_states, dt);
         }
         
-        drawGame();
+        draw();
     }
     
     quit();
 }
+#endif

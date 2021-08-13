@@ -3,6 +3,8 @@
 #include "utility.h"
 #include "player.h"
 
+#define BULLET_SOUND_LEN 10
+
 static SDL_Rect bullet_bounds = {
     .x = (int)(-BULLET_RADIUS) * 2,
     .y = (int)(-BULLET_RADIUS) * 2,
@@ -15,6 +17,20 @@ Bullet::Bullet(Vec2 position, int who_shot)
 : Entity(ENTITY_BULLET, position, BULLET_RADIUS, "bullets.png")
 {
     player_index = who_shot;
+}
+
+
+int Bullet::size()
+{
+    return (int)sizeof(*this);
+}
+
+
+void Bullet::explode(DOS_Color color, int freq_min, int freq_max)
+{
+    emitParticles(50, color);
+    alive = false;
+    RandomizedSound(10, freq_min, freq_max);
 }
 
 
@@ -42,7 +58,7 @@ void Bullet::contact(Entity * hit)
             if ( player_index != player->number ) { // don't shoot yourself
                 player->num_lives--;
                 // TODO: 0 lives
-                player->explode(player->color);
+                player->explode(player_info[player->number].color);
                 RandomizedSound(30, 800, 1200);
                 alive = false;
             }
@@ -51,11 +67,9 @@ void Bullet::contact(Entity * hit)
         case ENTITY_BULLET: {
             Bullet * other_bullet = (Bullet *)hit;
             if ( player_index != other_bullet->player_index ) {
-                this->emitParticles(50, DOS_RandomColor());
+                this->explode(DOS_RandomColor(), 1200, 1600);
                 other_bullet->emitParticles(50, DOS_RandomColor());
-                this->alive = false;
                 other_bullet->alive = false;
-                RandomizedSound(sound_len, 1200, 1600);
             }
             break;
         }

@@ -9,7 +9,7 @@ struct Log
 {
     static FILE * log;
     
-    static bool create(const char * path);
+    static void create(const char * path);
     static void destroy(void);
 };
 

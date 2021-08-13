@@ -1,6 +1,8 @@
 #ifndef defines_h
 #define defines_h
 
+#include <stdlib.h>
+
 #define DEBUG_VISUAL            0
 #define DEBUG_DATA              0
 
@@ -42,5 +44,10 @@
 #define MAX_SHIELD_STRENGTH     MS_TO_TICKS(1000)
 
 #define RANDOM_COLORS           -1
+
+#define ERROR(...)              fprintf(stderr, __VA_ARGS__); \
+                                exit(EXIT_FAILURE);
+#define SDL_ERROR(msg)          fprintf(stderr, msg ": %s\n", SDL_GetError()); \
+                                exit(EXIT_FAILURE);
 
 #endif /* defines_h */

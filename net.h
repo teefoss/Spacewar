@@ -11,7 +11,7 @@
 
 typedef s8 client_id_t;
 
-void NetInit(int argc, char ** argv);
+void InitNet(void);
 void NetQuit(void);
 void ClientSendInputState(InputState input_state);
 InputState HostReceiveInputState(client_id_t id);

@@ -1,6 +1,7 @@
 #include "net.h"
 #include "log.h"
 #include "types.h"
+#include "app.h"
 
 #include <SDL2/SDL.h>
 
@@ -87,7 +88,7 @@ void InitServer()
     }
 }
 
-void InitClients(char * host_name)
+void InitClients(const char * host_name)
 {
     printf("Joining a network game at %s\n", host_name);
 
@@ -108,11 +109,13 @@ void InitClients(char * host_name)
 }
 
 
-void NetInit(int argc, char ** argv)
+void InitNet()
 {
-    if ( argc == 3 ) {
-        if ( strcmp(argv[1], "-host") == 0 ) {
-            int num_players = atoi(argv[2]);
+    Args args = App::shared()->getArgs();
+    
+    if ( args.count == 3 ) {
+        if ( strcmp(args[1], "-host") == 0 ) {
+            int num_players = atoi(args[2]);
             if ( num_players < 2 || num_players > MAX_PLAYERS ) {
                 LOG("error: please specify 2-%d players\n", MAX_PLAYERS);
                 return;
@@ -120,8 +123,8 @@ void NetInit(int argc, char ** argv)
 
             num_clients = num_players - 1;
             InitServer();
-        } else if ( strcmp(argv[1], "-connect") == 0 ) {
-            InitClients(argv[2]);
+        } else if ( strcmp(args[1], "-connect") == 0 ) {
+            InitClients(args[2]);
         }
     }
 }

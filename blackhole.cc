@@ -16,6 +16,12 @@ BlackHole::BlackHole()
 }
 
 
+int BlackHole::size()
+{
+    return (int)sizeof(*this);
+}
+
+
 void BlackHole::update(float dt)
 {
     angle = RandomFloat(0.0f, 360.0f);
@@ -93,9 +99,7 @@ void BlackHole::contact(Entity * hit)
         }
         case ENTITY_BULLET: {
             Bullet * bullet = (Bullet *)hit;
-            bullet->emitParticles(50, DOS_RED);
-            bullet->alive = false;
-            RandomizedSound(bullet->sound_len, 300, 400);
+            bullet->explode(DOS_RED, 300, 400);
             break;
         }
         default:
