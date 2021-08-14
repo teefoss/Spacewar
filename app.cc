@@ -54,7 +54,7 @@ App::App(int argc, char ** argv)
     input.init(m_renderer);
     DOS_InitSound();
 
-    game.init(m_window);
+    game.init();
 }
 
 
@@ -90,7 +90,7 @@ void App::processControllerButton(u8 button)
     }
     
     if ( menu_is_open ) {
-        m_running = ProcessMenuControllerButton(button);
+        ProcessMenuControllerButton(button);
     }
 }
 
@@ -126,7 +126,7 @@ void App::processEvents()
                 break;
             case SDL_KEYDOWN:
                 if ( menu_is_open ) {
-                    m_running = ProcessMenuKey(event.key.keysym.sym);
+                    ProcessMenuKey(event.key.keysym.sym);
                 } else {
                     processKeyDown(event.key.keysym.sym);
                 }
@@ -145,38 +145,32 @@ void App::processEvents()
 }
 
 
-void App::getPlayerInput()
+void App::run()
 {
-    for ( int i = 0; i < game.numPlayers(); i++ ) {
-        m_player_input[i] = input.getInputState(i);
+    //int last_ms = 0;
+    int ticks = 0;
+    
+    while ( m_running ) {
+        
+        while ( !SDL_TICKS_PASSED(SDL_GetTicks(), ticks + 16) ) {
+            SDL_Delay(1);
+        }
+        float dt = (SDL_GetTicks() - ticks) / 1000.0f;
+        ticks = SDL_GetTicks();
+        
+        if (dt > 0.05f) { // TEMP
+            dt = 0.05f;
+        }
+        
+        processEvents();
+        game.getPlayerInput();
+        game.update(dt);
+        game.draw(m_renderer);
     }
 }
 
 
-void App::run()
+void App::quit()
 {
-    int last_ms = 0;
-    
-    while ( m_running ) {
-        // limit framerate
-        bool frame_done;
-        int current_ms;
-        int elapsed_ms;
-        do {
-            current_ms = SDL_GetTicks();
-            elapsed_ms = current_ms - last_ms;
-            frame_done = elapsed_ms >= MS_PER_FRAME;
-            if ( !frame_done ) {
-                SDL_Delay(1);
-            }
-        } while ( !frame_done );
-        float dt = (float)elapsed_ms / 1000.0f;
-        last_ms = current_ms;
-
-        processEvents();
-        getPlayerInput();
-        
-        game.update(m_player_input, dt);
-        game.draw(m_renderer);
-    }
+    m_running = false;
 }

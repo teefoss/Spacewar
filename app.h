@@ -29,6 +29,7 @@ public:
     void operator=(App const&) = delete;
     static App * shared() { return m_instance; }
     void run();
+    void quit();
     void toggleFullscreen();
     Args getArgs() { return m_args; }
     SDL_Renderer * getRenderer() { return m_renderer; }
@@ -37,16 +38,12 @@ private:
     void processEvents(void);
     void processControllerButton(u8 button);
     void processKeyDown(SDL_Keycode key);
-    void getPlayerInput(void);
     
     static App *    m_instance;
     SDL_Window *    m_window;
     SDL_Renderer *  m_renderer;
-    int             m_argc;
-    char **         m_argv;
     bool            m_fullscreen = true;
     bool            m_running = true;
-    InputState      m_player_input[MAX_PLAYERS];
     Args            m_args;
 };
 

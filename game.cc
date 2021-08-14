@@ -19,7 +19,7 @@
 Game game = Game();
 const Vec2 center = Vec2(GAME_W / 2, GAME_H / 2);
 
-void Game::init(SDL_Window * window)
+void Game::init()
 {     
     // blackhole appears on title screen
     black_hole = new BlackHole();
@@ -91,13 +91,6 @@ void Game::setNumPlayers(int n)
     num_players = number;
 }
 
-
-int Game::numPlayers()
-{
-    return num_players;
-}
-
-
 void Game::draw(SDL_Renderer * renderer)
 {
     SDL_SetRenderDrawColor(renderer, 16, 16, 16, 255);
@@ -152,7 +145,7 @@ void Game::trySpawnPowerup()
 }
 
 
-void Game::update(InputState input_state[MAX_PLAYERS], float dt)
+void Game::update(float dt)
 {
     black_hole->emitParticles(3, DOS_RED);
     particles.update(dt);
@@ -164,8 +157,8 @@ void Game::update(InputState input_state[MAX_PLAYERS], float dt)
 
     trySpawnPowerup();
     
-    for ( int i = 0; i < numPlayers(); i++ ) {
-        players[i]->updateFromInputState(input_state[i], dt);
+    for ( int i = 0; i < getNumPlayers(); i++ ) {
+        players[i]->updateFromInputState(player_input[i], dt);
     }
     
     for ( unsigned i = 0; i <entities.size(); i++ ) {
@@ -194,6 +187,15 @@ void Game::update(InputState input_state[MAX_PLAYERS], float dt)
         }
     }
 }
+
+
+void Game::getPlayerInput()
+{
+    for ( int i = 0; i < game.getNumPlayers(); i++ ) {
+        player_input[i] = input.getInputState(i);
+    }
+}
+
 
 // TODO: App::run() instead, remove
 #if 0

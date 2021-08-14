@@ -78,7 +78,7 @@ void InputManager::disconnectControllers()
         }
     }
     
-    game.setNumPlayers(game.numPlayers());
+    game.setNumPlayers(game.getNumPlayers());
     updateConsole();
 }
 

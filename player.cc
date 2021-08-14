@@ -333,7 +333,7 @@ void Player::update(float dt)
     if ( powerup == POWERUP_LASER ) {
         emitParticles(1, RANDOM_COLORS);
         
-        for ( int i = 0; i < game.numPlayers(); i++ ) {
+        for ( int i = 0; i < game.getNumPlayers(); i++ ) {
             if ( i == number || !game.players[i]->isActive() ) {
                 continue;
             }

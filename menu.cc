@@ -1,8 +1,8 @@
 #include "menu.h"
-#include "defines.h"
 #include "game.h"
 #include "input.h"
 #include "app.h"
+#include "utility.h"
 
 #include <stdlib.h>
 #include <dos.h>
@@ -62,19 +62,23 @@ void DrawMenu()
             DOS_CPrintString(con, "  ");
         }
         
-        DOS_CPrintString(con, "%s", item->name);
-        
-        switch ( item->state ) {
-            case ITEM_CYCLE:
+        switch ( item->display_type ) {
+            case DISPLAY_INTEGER:
+                DOS_CPrintString(con, "%s", item->name);
                 DOS_CSetForeground(con, accent);
                 DOS_CPrintString(con, " %d\n", *item->value);
                 break;
-            case ITEM_TOGGLE:
+            case DISPLAY_BOOLEAN:
+                DOS_CPrintString(con, "%s", item->name);
                 DOS_CSetForeground(con, *item->value ? accent : DOS_GRAY);
                 DOS_CPrintString(con, *item->value ? "ON\n" : "OFF\n");
                 break;
+            case DISPLAY_INFO:
+                DOS_CSetForeground(con, DOS_BRIGHT_GREEN);
+                DOS_CPrintString(con, "%s\n", item->name);
+                break;
             default:
-                DOS_CPrintString(con, "\n");
+                DOS_CPrintString(con, "%s\n", item->name);
                 break;
         }
     }
@@ -82,100 +86,121 @@ void DrawMenu()
     DOS_RenderConsole(con, MENU_MARGIN, MENU_MARGIN);
 }
 
-int StartGame(void);
-int QuitGame(void);
-int ContinueGame(void);
-int GoToNewGameMenu(void);
-int GoToAboutMenu(void);
-int GoToControlsMenu(void);
-int PreviousMenu(void);
-int CycleValue(void);
-int ToggleValue(void);
+void StartGame(void);
+void QuitGame(void);
+void ContinueGame(void);
+void PreviousMenu(void);
+void NextMenu(void);
+void CyclePlayers(void);
+void ToggleAliens(void);
+void TogglePowerups(void);
 
-static MenuItem new_game_items[8] = {
-    { "Start Game", ITEM_ENABLED, StartGame, NULL },
-    { "", ITEM_NULL, NULL, NULL },
-    { "Players: ", ITEM_CYCLE, NULL, NULL },
-    { "Aliens: ", ITEM_TOGGLE, NULL, NULL },
-    { "Powerups: ", ITEM_TOGGLE, NULL, NULL },
-    { "Black Hole Movement: ", ITEM_TOGGLE, NULL, NULL },
-    { "", ITEM_NULL, NULL, NULL },
-    { "Back", ITEM_ENABLED, PreviousMenu, NULL },
+enum MenuList{
+    MENU_MAIN,
+    MENU_NEW_GAME,
+    MENU_ABOUT,
+    MENU_CONTROLS,
+    MENU_COUNT
 };
 
-static MenuItem main_menu_items[6] = {
-    { "New Game", ITEM_ENABLED, GoToNewGameMenu, NULL },
-    { "Controls", ITEM_ENABLED, GoToControlsMenu, NULL },
-    { "About", ITEM_ENABLED, GoToAboutMenu, NULL },
-    { "Quit", ITEM_ENABLED, QuitGame, NULL },
-    { "", ITEM_NULL, NULL, NULL },
-    { "Continue", ITEM_DISABLED, ContinueGame, NULL }
+MenuItem new_game_items[] = {
+    { "Start Game", ITEM_ENABLED,   StartGame,      0, NULL, DISPLAY_NORMAL },
+    { "",           ITEM_NULL,      NULL,           0, NULL, DISPLAY_NORMAL },
+    { "Players: ",  ITEM_ENABLED,   CyclePlayers,   0, NULL, DISPLAY_INTEGER },
+    { "Aliens: ",   ITEM_ENABLED,   ToggleAliens,   0, NULL, DISPLAY_BOOLEAN },
+    { "Powerups: ", ITEM_ENABLED,   TogglePowerups, 0, NULL, DISPLAY_BOOLEAN },
+    { "",           ITEM_NULL,      NULL,           0, NULL, DISPLAY_NORMAL },
+    { "Back",       ITEM_ENABLED,   PreviousMenu,   0, NULL, DISPLAY_NORMAL },
 };
 
-static MenuItem about_menu_items[3] = {
-    { credits, ITEM_DISABLED, NULL, NULL },
-    { "", ITEM_NULL, NULL, NULL },
-    { "Back", ITEM_ENABLED, PreviousMenu, NULL }
+MenuItem main_menu_items[] = {
+    { "New Game",   ITEM_ENABLED,   NextMenu,       MENU_NEW_GAME, NULL, DISPLAY_NORMAL },
+    { "Controls",   ITEM_ENABLED,   NextMenu,       MENU_CONTROLS, NULL, DISPLAY_NORMAL },
+    { "About",      ITEM_ENABLED,   NextMenu,       MENU_ABOUT, NULL, DISPLAY_NORMAL },
+    { "Quit",       ITEM_ENABLED,   QuitGame,       0, NULL, DISPLAY_NORMAL },
+    { "",           ITEM_NULL,      NULL,           0, NULL, DISPLAY_NORMAL },
+    { "Continue",   ITEM_DISABLED,  ContinueGame,   0, NULL, DISPLAY_NORMAL }
 };
 
-static MenuItem controls_menu_items[3] = {
-    { controls, ITEM_DISABLED, NULL, NULL },
-    { "", ITEM_NULL, NULL, NULL },
-    { "Back", ITEM_ENABLED, PreviousMenu, NULL }
+MenuItem about_menu_items[] = {
+    { credits,      ITEM_DISABLED,  NULL, 	        0, NULL, DISPLAY_INFO },
+    { "",           ITEM_NULL,      NULL,           0, NULL, DISPLAY_NORMAL },
+    { "Back",       ITEM_ENABLED,   PreviousMenu,   0, NULL, DISPLAY_NORMAL }
 };
 
-static Menu main_menu = { "Spacewar", 6, main_menu_items, 0, NULL };
-static Menu new_game_menu = { "New Game", 8, new_game_items, 0, &main_menu };
-static Menu about_menu = { "About", 3, about_menu_items, 2, &main_menu };
-static Menu controls_menu = { "Controls", 3, controls_menu_items, 2, &main_menu };
+MenuItem controls_menu_items[] = {
+    { controls,     ITEM_DISABLED,  NULL,           0, NULL, DISPLAY_INFO },
+    { "",           ITEM_NULL,      NULL,           0, NULL, DISPLAY_NORMAL },
+    { "Back",       ITEM_ENABLED,   PreviousMenu,   0, NULL, DISPLAY_NORMAL }
+};
+
+Menu menus[MENU_COUNT] = {
+    { GAME_NAME,  ARRAY_SIZE(main_menu_items),      main_menu_items,     0, -1 },
+    { "New Game", ARRAY_SIZE(new_game_items),       new_game_items,      0, MENU_MAIN },
+    { "About",    ARRAY_SIZE(about_menu_items),     about_menu_items,    2, MENU_MAIN },
+    { "Controls", ARRAY_SIZE(controls_menu_items),  controls_menu_items, 2, MENU_MAIN }
+};
 
 #pragma mark -
 
-int StartGame(void)
+void StartGame(void)
 {
     main_menu_items[5].state = ITEM_ENABLED;
-    current = &main_menu;
+    current = &menus[MENU_MAIN];
     current->selected = 5;
     game.start();
-    
-    return true;
 }
 
-int QuitGame(void)
+
+void QuitGame(void)
 {
-    return false;
+    App::shared()->quit();
 }
 
-int ContinueGame(void)
+
+void ContinueGame(void)
 {
     if ( game.match_started ) {
         menu_is_open = false;
     }
-    return true;
 }
 
-int GoToNewGameMenu(void)
+
+void PreviousMenu(void)
 {
-    current = &new_game_menu;
-    return true;
+    if ( current->previous_menu >= 0 ) {
+        current = &menus[current->previous_menu];
+    }
 }
 
-int GoToAboutMenu(void)
+
+void NextMenu(void)
 {
-    current = &about_menu;
-    return true;
+    current = &menus[current->items[current->selected].next_menu];
 }
 
-int GoToControlsMenu(void)
+
+void CyclePlayers()
 {
-    current = &controls_menu;
-    return true;
+    int n = game.getNumPlayers() + 1;
+    
+    if ( n > game.maxPlayers() ) {
+        n = 1;
+    }
+    
+    game.setNumPlayers(n);
 }
 
-int PreviousMenu(void)
+
+void ToggleAliens()
 {
-    current = current->previous_menu;
-    return true;
+    game.aliens_on = !game.aliens_on;
+}
+
+
+void TogglePowerups()
+{
+    game.powerups_on = !game.powerups_on;
 }
 
 
@@ -184,12 +209,11 @@ void InitMenu()
     SDL_Renderer * renderer = App::shared()->getRenderer();
     con = DOS_NewConsole(renderer, 64, 20, DOS_MODE80);
     DOS_CSetCursorType(con, DOS_CURSOR_NONE);
-    current = &main_menu;
+    current = &menus[MENU_MAIN];
     
     new_game_items[2].value = &game.num_players;
     new_game_items[3].value = &game.aliens_on;
     new_game_items[4].value = &game.powerups_on;
-    new_game_items[5].value = &game.black_hole_moves;
 }
 
 
@@ -234,19 +258,7 @@ void MenuUp()
 }
 
 
-static void CycleNumPlayers()
-{
-    int n = game.numPlayers() + 1;
-    
-    if ( n > game.maxPlayers() ) {
-        n = 1;
-    }
-    
-    game.setNumPlayers(n);
-}
-
-
-bool ProcessMenuKey(SDL_Keycode key)
+void ProcessMenuKey(SDL_Keycode key)
 {
     MenuItem * item = &current->items[current->selected];
     
@@ -266,28 +278,17 @@ bool ProcessMenuKey(SDL_Keycode key)
             DOS_QueueSound(800, 35);
             DOS_QueueSound(1200, 35);
             DOS_PlayQueuedSound();
-            switch ( item->state ) {
-                case ITEM_CYCLE:
-                    CycleNumPlayers();
-                    break;
-                case ITEM_TOGGLE:
-                    *item->value = !*item->value;
-                    break;
-                default:
-                    return item->action();
-            }
+            item->action();
             break;
         case SDLK_ESCAPE:
-            return ContinueGame();
+            ContinueGame();
         default:
             break;
     }
-    
-    return true;
 }
 
 
-bool ProcessMenuControllerButton(u16 button)
+void ProcessMenuControllerButton(u16 button)
 {
     switch ( button ) {
         case SDL_CONTROLLER_BUTTON_DPAD_UP:
@@ -297,11 +298,9 @@ bool ProcessMenuControllerButton(u16 button)
             MenuDown();
             break;
         case SDL_CONTROLLER_BUTTON_A:
-            return current->items[current->selected].action();
+            current->items[current->selected].action();
             break;
         default:
             break;
     }
-    
-    return true;
 }

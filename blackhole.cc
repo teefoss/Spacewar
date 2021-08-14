@@ -48,7 +48,7 @@ void BlackHole::update(float dt)
         }
     }
     
-    for ( int i = 0; i < game.numPlayers(); i++ ) {
+    for ( int i = 0; i < game.getNumPlayers(); i++ ) {
         Player * pl = game.players[i];
         if ( pl && pl->isActive() && pl->powerup != POWERUP_ZEROG ) {
             exertGravity(game.players[i], BLACK_HOLE_GRAVITY, dt);
