@@ -5,6 +5,7 @@
 #include "types.h"
 #include "net.h"
 #include "menu.h"
+#include "bullet.h"
 
 #include <string.h>
 
@@ -55,6 +56,13 @@ App::App(int argc, char ** argv)
     DOS_InitSound();
 
     game.init();
+    
+#if 1
+    LOG("size of player:  %zu bytes\n", sizeof(Player));
+    LOG("size of bl hole: %zu bytes\n", sizeof(BlackHole));
+    LOG("size of bullet:  %zu bytes\n", sizeof(Bullet));
+    LOG("size of pup:     %zu bytes\n", sizeof(Powerup));
+#endif
 }
 
 
@@ -150,6 +158,10 @@ void App::run()
     //int last_ms = 0;
     int ticks = 0;
     
+    if ( is_network_game ) {
+        NetSync();
+    }
+    
     while ( m_running ) {
         
         while ( !SDL_TICKS_PASSED(SDL_GetTicks(), ticks + 16) ) {
@@ -163,8 +175,14 @@ void App::run()
         }
         
         processEvents();
-        game.getPlayerInput();
-        game.update(dt);
+        
+        if ( is_network_game ) {
+            game.netUpdate(dt);
+        } else {
+            game.getPlayerInput();
+            game.update(dt);
+        }
+        
         game.draw(m_renderer);
     }
 }

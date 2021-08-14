@@ -174,3 +174,17 @@ void NetSendToClient(client_id_t id, void * data, int len)
 {
     SDLNet_TCP_Send(clients[id], data, len);
 }
+
+
+void NetSync()
+{
+    u8 sync = 1;
+    
+    if ( my_id == SERVER_ID ) {
+        for ( int i = 0; i < num_clients; i++ ) {
+            SDLNet_TCP_Recv(my_socket, &sync, sizeof(sync));
+        }
+    } else {
+        SDLNet_TCP_Send(my_socket, &sync, sizeof(sync));
+    }
+}

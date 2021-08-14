@@ -65,7 +65,7 @@ protected:
     Vec2 orientation;
     float radius;
     float angle; // for renderering, orientation angle in degrees
-    const char * texture_name; // (file name)
+    char texture_name[100]; // (file name)
     SDL_Texture * texture;
 };
 

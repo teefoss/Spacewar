@@ -21,7 +21,7 @@ Entity::Entity
     velocity.zero();
     setOrientation(direction);
     
-    this->texture_name = texture_name;
+    strcpy(this->texture_name, texture_name);
     loadTexture(texture_name);
 }
 

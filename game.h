@@ -24,6 +24,9 @@ public:
     void setNumPlayers(int n);
     int getNumPlayers() { return num_players; }
     void update(float dt);
+    void netUpdate(float dt);
+    void serverUpdate(float dt);
+    void clientUpdate();
     void draw(SDL_Renderer * renderer);
     void getPlayerInput(void);
 
