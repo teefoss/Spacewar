@@ -18,45 +18,45 @@ Entity::Entity
     this->position = origin;
     this->radius = radius;
     
-    velocity.zero();
-    setOrientation(direction);
+    velocity.Zero();
+    SetOrientation(direction);
     
     strcpy(this->texture_name, texture_name);
-    loadTexture(texture_name);
+    LoadTexture(texture_name);
 }
 
 
 
 Entity::~Entity()
 {
-    ResourceManager::shared().destroyTexture(texture_name);
+    ResourceManager::Shared().DestroyTexture(texture_name);
 }
 
 
-void Entity::loadTexture(const char * filename)
+void Entity::LoadTexture(const char * filename)
 {
-    SDL_Renderer * renderer = App::shared()->getRenderer();
-    texture = ResourceManager::shared().getTexture(filename, renderer);
+    SDL_Renderer * renderer = App::Shared()->GetRenderer();
+    texture = ResourceManager::Shared().GetTexture(filename, renderer);
 }
 
 
-const char * Entity::getTextureName()
+const char * Entity::GetTextureName()
 {
     return texture_name;
 }
 
 
-void Entity::setOrientation(Cardinal direction)
+void Entity::SetOrientation(Cardinal direction)
 {
     // HACK: why doesn't this work if we start with { -1, 0 } (west)?
     this->orientation = Vec2(1.0f, 0.0f);
     angle = 0;
-    rotateByDegrees((float)direction);
+    Rotate((float)direction);
 }
 
 
 // just making sure 'angle' gets updated too
-void Entity::rotateByDegrees(float degrees)
+void Entity::Rotate(float degrees)
 {
     angle += degrees;
     if ( angle < 0.0f ) {
@@ -64,13 +64,13 @@ void Entity::rotateByDegrees(float degrees)
     } else if ( angle >= 360.0 ) {
         angle -= 360.0f;
     }
-    orientation.rotateByDegrees(degrees);
+    orientation.RotateByDegrees(degrees);
     //orientation.normalize();
 }
 
 
 
-void Entity::drawSprite(SDL_Renderer * renderer, int cell_x, int cell_y)
+void Entity::DrawSprite(SDL_Renderer * renderer, int cell_x, int cell_y)
 {
     int diameter = (int)(radius * 2.0f);
     
@@ -91,7 +91,7 @@ void Entity::drawSprite(SDL_Renderer * renderer, int cell_x, int cell_y)
 
 
 // dos_color = -1: random DOS_Color
-void Entity::emitParticles(int count, int dos_color)
+void Entity::EmitParticles(int count, int dos_color)
 {
     for ( int i = 0; i < count; i++ ) {
     
@@ -102,38 +102,38 @@ void Entity::emitParticles(int count, int dos_color)
             sdl_color = DOS_CGAColorToSDLColor((DOS_Color)dos_color);
         }
 
-        Vec2 par_origin = randomPointWithinRange(radius);
+        Vec2 par_origin = RandomPointWithinRange(radius);
                     
         // send it on its way, randomly
         Vec2 par_vel;
         par_vel.x = RandomFloat(-10.0f, 10.0f);
         par_vel.y = RandomFloat(-10.0f, 10.0f);
-        par_vel.rotateByDegrees(RANDOM_ANGLE);
+        par_vel.RotateByDegrees(RANDOM_ANGLE);
         par_vel += velocity;
         
         int lifespan = Random(85, 145);
         
-        particles.spawn(par_origin, par_vel, lifespan, sdl_color);
+        particles.Spawn(par_origin, par_vel, lifespan, sdl_color);
     }
 }
 
 
 
-bool Entity::isColliding(Entity * other)
+bool Entity::IsColliding(Entity * other)
 {
     Vec2 v = position - other->position;
     float adjust = 0.8; // actual hitbox TODO: class member?
     
-    return v.length() < radius * adjust + other->radius * adjust;
+    return v.Length() < radius * adjust + other->radius * adjust;
 }
 
 
 
-Vec2 Entity::randomPointWithinRange(float range)
+Vec2 Entity::RandomPointWithinRange(float range)
 {
     float dist = RandomFloat(0.0f, range);
     Vec2 pt = Vec2(dist, 0.0f);
-    pt.rotateByDegrees(RANDOM_ANGLE);
+    pt.RotateByDegrees(RANDOM_ANGLE);
     pt += position;
 
     return pt;
@@ -141,10 +141,10 @@ Vec2 Entity::randomPointWithinRange(float range)
 
 
 
-void Entity::exertGravity(Entity * obj, float gravity, float dt)
+void Entity::ExertGravity(Entity * obj, float gravity, float dt)
 {
     Vec2 v = position - obj->position;
-    v *= 1.0f / (v.length() * gravity) * dt;
+    v *= 1.0f / (v.Length() * gravity) * dt;
 //    v *= dt; // TODO: needed?
     
     obj->velocity += v;
@@ -152,7 +152,7 @@ void Entity::exertGravity(Entity * obj, float gravity, float dt)
 
 
 
-void Entity::updatePosition(float dt, bool wrap)
+void Entity::UpdatePosition(float dt, bool wrap)
 {
     position += velocity * dt;
     

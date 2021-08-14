@@ -15,11 +15,11 @@ public:
     }
     ~Storage() { free(buffer); }
     
-    unsigned count() const { return num_elements; }
-    void empty() { num_elements = 0; }
-    void append(T element) { insert(num_elements, element); }
-    void insert(unsigned i, T element);
-    void remove(unsigned i);
+    unsigned Count() const { return num_elements; }
+    void Empty() { num_elements = 0; }
+    void Append(T element) { Insert(num_elements, element); }
+    void Insert(unsigned i, T element);
+    void Remove(unsigned i);
     
     T operator[](unsigned i) { return buffer[i]; }
     T& operator[](unsigned i) const { return buffer[i]; }
@@ -36,7 +36,7 @@ private:
 
 
 template <typename T>
-void Storage<T>::insert(unsigned i, T element)
+void Storage<T>::Insert(unsigned i, T element)
 {
     size_t size = sizeof(T);
         
@@ -49,7 +49,7 @@ void Storage<T>::insert(unsigned i, T element)
 
 
 template <typename T>
-void Storage<T>::remove(unsigned i)
+void Storage<T>::Remove(unsigned i)
 {
     memmove(&buffer[i], &buffer[i + 1], sizeof(T) * (num_elements - i - 1));
     --num_elements;

@@ -10,7 +10,7 @@ ResourceManager::~ResourceManager()
 }
 
 SDL_Texture *
-ResourceManager::getTexture(const char * file_name, SDL_Renderer * renderer)
+ResourceManager::GetTexture(const char * file_name, SDL_Renderer * renderer)
 {
     auto element = textures.find(file_name);
     
@@ -39,7 +39,7 @@ ResourceManager::getTexture(const char * file_name, SDL_Renderer * renderer)
     }
 }
 
-void ResourceManager::destroyTexture(const char * file_name)
+void ResourceManager::DestroyTexture(const char * file_name)
 {
     auto element = textures.find(file_name);
     

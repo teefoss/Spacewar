@@ -21,8 +21,8 @@ class StarField
 public:
     StarField(int width, int height);
     ~StarField() { delete[] star_store; }
-    void init(int game_w, int game_h);
-    void draw(SDL_Renderer * renderer);
+    void Init(int game_w, int game_h);
+    void Draw(SDL_Renderer * renderer);
     
 private:
     Star * star_store;

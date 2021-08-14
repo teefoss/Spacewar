@@ -39,27 +39,27 @@ public:
         Cardinal direction = CARDINAL_EAST );
     virtual ~Entity();
 
-    virtual void draw(SDL_Renderer * renderer) = 0;
-    virtual void update(float dt) = 0;
-    virtual void contact(Entity * hit) = 0;
-    virtual int size(void) = 0;
+    virtual void Draw(SDL_Renderer * renderer) = 0;
+    virtual void Update(float dt) = 0;
+    virtual void Contact(Entity * hit) = 0;
+    virtual int Size(void) = 0;
     
-    void emitParticles(int count, int dos_color);
-    void exertGravity(Entity * obj, float gravity, float dt);
-    bool isColliding(Entity * other);
-    void rotateByDegrees(float degrees);
-    void loadTexture(const char * filename);
-    const char * getTextureName(void);
+    void EmitParticles(int count, int dos_color);
+    void ExertGravity(Entity * obj, float gravity, float dt);
+    bool IsColliding(Entity * other);
+    void Rotate(float degrees);
+    void LoadTexture(const char * filename);
+    const char * GetTextureName(void);
     
     Vec2 velocity;
     EntityType type;
     boolean alive = true;
     
 protected:
-    void updatePosition(float dt, bool wrap);
-    void drawSprite(SDL_Renderer * renderer, int cell_x = 0, int cell_y = 0);
-    void setOrientation(Cardinal direction);
-    Vec2 randomPointWithinRange(float range);
+    void UpdatePosition(float dt, bool wrap);
+    void DrawSprite(SDL_Renderer * renderer, int cell_x = 0, int cell_y = 0);
+    void SetOrientation(Cardinal direction);
+    Vec2 RandomPointWithinRange(float range);
 
     Vec2 position;
     Vec2 orientation;

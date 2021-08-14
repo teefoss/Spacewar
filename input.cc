@@ -8,7 +8,7 @@
 InputManager input;
 
 
-void InputManager::init(SDL_Renderer * renderer)
+void InputManager::Init(SDL_Renderer * renderer)
 {
     keys = SDL_GetKeyboardState(NULL);
     SDL_GameControllerEventState(SDL_ENABLE);
@@ -20,13 +20,13 @@ void InputManager::init(SDL_Renderer * renderer)
     
     console = DOS_NewConsole(renderer, 80, 5, DOS_MODE80);
     DOS_CSetCursorType(console, DOS_CURSOR_NONE);
-    updateConsole();
+    UpdateConsole();
 }
 
 
-void InputManager::updateConsole()
+void InputManager::UpdateConsole()
 {
-    int num_controllers = numControllers();
+    int num_controllers = NumControllers();
     int which_keyboard = 0;
     const char * kb_strings[2] = { "Keyboard (WASD)", "Keyboard (Arrows)" };
     
@@ -60,7 +60,7 @@ void InputManager::updateConsole()
 }
 
 
-void InputManager::renderConsole()
+void InputManager::RenderConsole()
 {
     int height = DOS_CGetHeight(console) * DOS_CGetMode(console);
     int x_offset = DOS_CHAR_WIDTH * 2;
@@ -69,7 +69,7 @@ void InputManager::renderConsole()
 }
 
 
-void InputManager::disconnectControllers()
+void InputManager::DisconnectControllers()
 {
     for ( int i = 0; i < MAX_CONTROLLERS; i++ ) {
         if ( controllers[i] ) {
@@ -78,12 +78,12 @@ void InputManager::disconnectControllers()
         }
     }
     
-    game.setNumPlayers(game.getNumPlayers());
-    updateConsole();
+    game.SetNumPlayers(game.GetNumPlayers());
+    UpdateConsole();
 }
 
 
-void InputManager::connectControllers()
+void InputManager::ConnectControllers()
 {
     int num_joysticks = SDL_NumJoysticks();
     int j = 0; // index into controllers[]
@@ -108,19 +108,19 @@ void InputManager::connectControllers()
         }
     }
     
-    updateConsole();
+    UpdateConsole();
 }
 
 
-void InputManager::reconnectControllers()
+void InputManager::ReconnectControllers()
 {
-    disconnectControllers();
-    connectControllers();
-    updateConsole();
+    DisconnectControllers();
+    ConnectControllers();
+    UpdateConsole();
 }
 
 
-int InputManager::numControllers()
+int InputManager::NumControllers()
 {
     int num = 0;
     for ( int i = 0; i < MAX_CONTROLLERS; i++ ) {
@@ -135,25 +135,25 @@ int InputManager::numControllers()
 
 // controllers take precedence. if num players > num controllers, use kb
 // - if controller: controller_num == player_num
-InputState InputManager::getInputState(int player_num)
+InputState InputManager::GetInputState(int player_num)
 {
     InputState state;
     memset(&state, 0, sizeof state);
         
     // WASD (0) or arrows (1)?
-    int which_keyboard = player_num - numControllers();
+    int which_keyboard = player_num - NumControllers();
     
     if ( which_keyboard < 0 ) {
-        state = getControllerInputState(player_num);
+        state = GetControllerInputState(player_num);
     } else {
-        state = getKeyboardInputState(which_keyboard);
+        state = GetKeyboardInputState(which_keyboard);
     }
     
     return state;
 }
 
 
-InputState InputManager::getKeyboardInputState(int which_keyboard)
+InputState InputManager::GetKeyboardInputState(int which_keyboard)
 {
     InputState state;
     
@@ -169,7 +169,7 @@ InputState InputManager::getKeyboardInputState(int which_keyboard)
 
 #define CONTROLLER(x) SDL_CONTROLLER_BUTTON_ ## x
 
-InputState InputManager::getControllerInputState(int controller_num)
+InputState InputManager::GetControllerInputState(int controller_num)
 {
     InputState state;
     

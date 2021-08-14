@@ -111,7 +111,7 @@ void InitClients(const char * host_name)
 
 void InitNet()
 {
-    Args args = App::shared()->getArgs();
+    Args args = App::Shared()->GetArgs();
     
     if ( args.count == 3 ) {
         if ( strcmp(args[1], "-host") == 0 ) {

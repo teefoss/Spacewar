@@ -20,9 +20,9 @@ public:
     ParticleSystem() {
         particle_store = Storage<Particle>();
     }
-    void spawn(Vec2 orig, Vec2 vel, int lifespan, SDL_Color & color);
-    void draw(SDL_Renderer * renderer);
-    void update(float dt);
+    void Spawn(Vec2 orig, Vec2 vel, int lifespan, SDL_Color & color);
+    void Draw(SDL_Renderer * renderer);
+    void Update(float dt);
     
 private:
     Storage<Particle> particle_store;

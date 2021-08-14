@@ -39,7 +39,7 @@ Powerup::Powerup()
 }
 
 
-void Powerup::update(float dt)
+void Powerup::Update(float dt)
 {
     (void)dt;
     
@@ -50,14 +50,14 @@ void Powerup::update(float dt)
 
 
 
-void Powerup::draw(SDL_Renderer * renderer)
+void Powerup::Draw(SDL_Renderer * renderer)
 {
-    Entity::drawSprite(renderer, type);
+    Entity::DrawSprite(renderer, type);
 }
 
 
 
-void Powerup::contact(Entity * hit)
+void Powerup::Contact(Entity * hit)
 {
     switch ( hit->type ) {
         case ENTITY_BLACK_HOLE:
@@ -69,7 +69,7 @@ void Powerup::contact(Entity * hit)
 }
 
 
-int Powerup::size()
+int Powerup::Size()
 {
     return (int)sizeof(*this);
 }

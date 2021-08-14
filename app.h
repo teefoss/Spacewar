@@ -27,17 +27,17 @@ public:
     ~App();
     App(App const&) = delete;
     void operator=(App const&) = delete;
-    static App * shared() { return m_instance; }
-    void run();
-    void quit();
-    void toggleFullscreen();
-    Args getArgs() { return m_args; }
-    SDL_Renderer * getRenderer() { return m_renderer; }
+    static App * Shared() { return m_instance; }
+    void Run();
+    void Quit();
+    void ToggleFullscreen();
+    Args GetArgs() { return m_args; }
+    SDL_Renderer * GetRenderer() { return m_renderer; }
     
 private:
-    void processEvents(void);
-    void processControllerButton(u8 button);
-    void processKeyDown(SDL_Keycode key);
+    void ProcessEvents(void);
+    void ProcessControllerButton(u8 button);
+    void ProcessKeyDown(SDL_Keycode key);
     
     static App *    m_instance;
     SDL_Window *    m_window;

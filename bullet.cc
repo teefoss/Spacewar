@@ -20,23 +20,23 @@ Bullet::Bullet(Vec2 position, int who_shot)
 }
 
 
-int Bullet::size()
+int Bullet::Size()
 {
     return (int)sizeof(*this);
 }
 
 
-void Bullet::explode(DOS_Color color, int freq_min, int freq_max)
+void Bullet::Explode(DOS_Color color, int freq_min, int freq_max)
 {
-    emitParticles(50, color);
+    EmitParticles(50, color);
     alive = false;
     RandomizedSound(10, freq_min, freq_max);
 }
 
 
-void Bullet::update(float dt)
+void Bullet::Update(float dt)
 {
-    updatePosition(dt, false);
+    UpdatePosition(dt, false);
     
     if ( !VecInRect(position, &bullet_bounds) ) {
         alive = false;
@@ -44,13 +44,13 @@ void Bullet::update(float dt)
 }
 
 
-void Bullet::draw(SDL_Renderer * renderer)
+void Bullet::Draw(SDL_Renderer * renderer)
 {
-    Entity::drawSprite(renderer, player_index);
+    Entity::DrawSprite(renderer, player_index);
 }
 
 
-void Bullet::contact(Entity * hit)
+void Bullet::Contact(Entity * hit)
 {
     switch ( hit->type ) {
         case ENTITY_PLAYER: {
@@ -58,7 +58,7 @@ void Bullet::contact(Entity * hit)
             if ( player_index != player->number ) { // don't shoot yourself
                 player->num_lives--;
                 // TODO: 0 lives
-                player->explode(player_info[player->number].color);
+                player->Explode(player_info[player->number].color);
                 RandomizedSound(30, 800, 1200);
                 alive = false;
             }
@@ -67,8 +67,8 @@ void Bullet::contact(Entity * hit)
         case ENTITY_BULLET: {
             Bullet * other_bullet = (Bullet *)hit;
             if ( player_index != other_bullet->player_index ) {
-                this->explode(DOS_RandomColor(), 1200, 1600);
-                other_bullet->emitParticles(50, DOS_RandomColor());
+                this->Explode(DOS_RandomColor(), 1200, 1600);
+                other_bullet->EmitParticles(50, DOS_RandomColor());
                 other_bullet->alive = false;
             }
             break;

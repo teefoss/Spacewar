@@ -5,32 +5,32 @@
 ParticleSystem particles = ParticleSystem();
 
 
-void ParticleSystem::spawn(Vec2 pos, Vec2 vel, int lifespan, SDL_Color & color)
+void ParticleSystem::Spawn(Vec2 pos, Vec2 vel, int lifespan, SDL_Color & color)
 {
     Particle p = { pos, vel, lifespan, color };
-    particle_store.append(p);
+    particle_store.Append(p);
 }
 
 
-void ParticleSystem::draw(SDL_Renderer * renderer)
+void ParticleSystem::Draw(SDL_Renderer * renderer)
 {
     Particle * p = particle_store;
-    for ( unsigned i = 0; i < particle_store.count(); i++, p++ ) {
+    for ( unsigned i = 0; i < particle_store.Count(); i++, p++ ) {
         SetColor(renderer, &p->color);
         SDL_RenderDrawPoint(renderer, p->position.x, p->position.y);
     }
 }
 
 
-void ParticleSystem::update(float dt)
+void ParticleSystem::Update(float dt)
 {
     Particle * p = particle_store;
-    for ( unsigned i = 0; i < particle_store.count(); i++, p++ ) {
+    for ( unsigned i = 0; i < particle_store.Count(); i++, p++ ) {
         p->position += p->velocity * dt;
         WrapPosition(&p->position, GAME_W, GAME_H);
         
         if ( --p->lifespan < 0 ) {
-            particle_store.remove(i);
+            particle_store.Remove(i);
         }
     }
 }

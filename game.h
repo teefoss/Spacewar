@@ -17,18 +17,18 @@ class Game
 public:
     Game() { };
     ~Game() { };
-    void init();
-    void start(void);
-    void quit(void);
-    int maxPlayers(void);
-    void setNumPlayers(int n);
-    int getNumPlayers() { return num_players; }
-    void update(float dt);
-    void netUpdate(float dt);
-    void serverUpdate(float dt);
-    void clientUpdate();
-    void draw(SDL_Renderer * renderer);
-    void getPlayerInput(void);
+    void Init();
+    void Start(void);
+    void Quit(void);
+    int MaxPlayers(void);
+    void SetNumPlayers(int n);
+    int GetNumPlayers() { return num_players; }
+    void Update(float dt);
+    void NetUpdate(float dt);
+    void ServerUpdate(float dt);
+    void ClientUpdate();
+    void Draw(SDL_Renderer * renderer);
+    void GetPlayerInput(void);
 
     std::vector<Entity *> entities;
     Player * players[MAX_PLAYERS] = { NULL };
@@ -40,8 +40,8 @@ public:
     int black_hole_moves = false;
     
 private:
-    void clearEntities(void);
-    void trySpawnPowerup(void);
+    void ClearEntities(void);
+    void TrySpawnPowerup(void);
     
     BlackHole * black_hole;
     int powerup_timer = SEC_TO_TICKS(10);

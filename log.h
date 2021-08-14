@@ -9,8 +9,8 @@ struct Log
 {
     static FILE * log;
     
-    static void create(const char * path);
-    static void destroy(void);
+    static void Create(const char * path);
+    static void Destroy(void);
 };
 
 #endif /* log_h */

@@ -36,22 +36,22 @@ public:
     Player(int index);
     ~Player();
 
-    void update(float dt) override;
+    void Update(float dt) override;
     void updateFromInputState(InputState input_state, float dt);
-    void draw(SDL_Renderer * renderer) override;
-    void contact(Entity * hit) override;
-    int size(void) override;
+    void Draw(SDL_Renderer * renderer) override;
+    void Contact(Entity * hit) override;
+    int Size(void) override;
     
-    bool isActive(void);
-    void explode(int dos_color);
-    void thrust(float dt);
-    void shootBullet(void);
-    void rotateByDegrees(float degrees);
-    Vec2 nozzlePoint(void);
-    Vec2 laserEndPoint(void);
-    void laserPlayer(Player * other_player);
-    void explosionSound(void);
-    void renderHUD(SDL_Renderer * renderer);
+    bool IsActive(void);
+    void Explode(int dos_color);
+    void Thrust(float dt);
+    void ShootBullet(void);
+    void RotateByDegrees(float degrees);
+    Vec2 NozzlePoint(void);
+    Vec2 LaserEndPoint(void);
+    void LaserPlayer(Player * other_player);
+    void ExplosionSound(void);
+    void RenderHUD(SDL_Renderer * renderer);
     
     u8 number;
     s8 num_lives = MAX_LIVES; // TODO: need a kill function
@@ -61,12 +61,12 @@ public:
     boolean shield_up = false;
     
 private:
-    void resetPosition(void);
-    bool isDead(void);
-    bool isRespawning(void);
-    void eatPowerup(Powerup * powerup);
-    void setPowerupEffect(Powerup * powerup);
-    void makeHUDTexture(SDL_Renderer * renderer);
+    void ResetPosition(void);
+    bool IsDead(void);
+    bool IsRespawning(void);
+    void EatPowerup(Powerup * powerup);
+    void SetPowerupEffect(Powerup * powerup);
+    void MakeHUDTexture(SDL_Renderer * renderer);
 
     s16 respawn_timer = 0;
     s16 shoot_cooldown_timer = 0;

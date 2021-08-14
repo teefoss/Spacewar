@@ -23,10 +23,10 @@ class Powerup : public Entity
 {
 public:
     Powerup();
-    void update(float dt) override;
-    void draw(SDL_Renderer * renderer) override;
-    void contact(Entity * hit) override;
-    int size(void) override;
+    void Update(float dt) override;
+    void Draw(SDL_Renderer * renderer) override;
+    void Contact(Entity * hit) override;
+    int Size(void) override;
 
     PowerupType type;
     s16 effect_time; // how long the player has it for

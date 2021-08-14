@@ -28,7 +28,7 @@ StarField::StarField(int width, int height)
 }
 
 
-void StarField::draw(SDL_Renderer * renderer)
+void StarField::Draw(SDL_Renderer * renderer)
 {
     static const DOS_Color twinkle_colors[] = { DOS_YELLOW, DOS_GRAY };
     

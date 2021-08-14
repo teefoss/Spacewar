@@ -19,7 +19,7 @@
 Game game = Game();
 const Vec2 center = Vec2(GAME_W / 2, GAME_H / 2);
 
-void Game::init()
+void Game::Init()
 {
     if ( is_network_game ) {
         num_players = num_clients + 1;
@@ -41,9 +41,9 @@ void Game::init()
 }
 
 
-void Game::quit()
+void Game::Quit()
 {
-    clearEntities();
+    ClearEntities();
         
 #if DEBUG_DATA
     DOS_FreeConsole(con);
@@ -51,7 +51,7 @@ void Game::quit()
 }
 
 
-void Game::clearEntities()
+void Game::ClearEntities()
 {
     for ( unsigned i = 0; i < entities.size(); i++ ) {
         delete entities[i];
@@ -61,12 +61,12 @@ void Game::clearEntities()
 }
 
 
-void Game::start()
+void Game::Start()
 {
     match_started = true;
     menu_is_open = false;
 
-    clearEntities();
+    ClearEntities();
         
     black_hole = new BlackHole();
     entities.push_back(black_hole);
@@ -79,9 +79,9 @@ void Game::start()
 
 
 // max players allowed by current input status (how many controllers connected)
-int Game::maxPlayers()
+int Game::MaxPlayers()
 {
-    int max_players = KB_NUM_USERS + input.numControllers();
+    int max_players = KB_NUM_USERS + input.NumControllers();
     
     if ( max_players > MAX_PLAYERS ) {
         max_players = MAX_PLAYERS;
@@ -90,15 +90,15 @@ int Game::maxPlayers()
     return max_players;
 }
 
-void Game::setNumPlayers(int n)
+void Game::SetNumPlayers(int n)
 {
     int number = n;
     
-    CLAMP(number, 1, maxPlayers());
+    CLAMP(number, 1, MaxPlayers());
     num_players = number;
 }
 
-void Game::draw(SDL_Renderer * renderer)
+void Game::Draw(SDL_Renderer * renderer)
 {
     SDL_SetRenderDrawColor(renderer, 16, 16, 16, 255);
     SDL_RenderClear(renderer);
@@ -106,23 +106,23 @@ void Game::draw(SDL_Renderer * renderer)
     DOS_SetColor(renderer, DOS_BLACK);
     SDL_RenderFillRect(renderer, NULL);
     
-    star_field.draw(renderer);
+    star_field.Draw(renderer);
     
     if ( !menu_is_open && match_started ) {
         for ( int i = 0; i < num_players; i++ ) {
-            players[i]->renderHUD(renderer);
+            players[i]->RenderHUD(renderer);
         }
     }
 
-    particles.draw(renderer);
+    particles.Draw(renderer);
     
     for ( unsigned i = 0; i < entities.size(); i++ ) {
-        entities[i]->draw(renderer);
+        entities[i]->Draw(renderer);
     }
         
     if ( menu_is_open ) {
         DrawMenu();
-        input.renderConsole();
+        input.RenderConsole();
     }
     
 #if DEBUG_DATA
@@ -138,7 +138,7 @@ void Game::draw(SDL_Renderer * renderer)
 }
 
 
-void Game::trySpawnPowerup()
+void Game::TrySpawnPowerup()
 {
     if ( !powerups_on ) {
         return;
@@ -152,24 +152,24 @@ void Game::trySpawnPowerup()
 }
 
 
-void Game::update(float dt)
+void Game::Update(float dt)
 {
-    black_hole->emitParticles(3, DOS_RED);
-    particles.update(dt);
+    black_hole->EmitParticles(3, DOS_RED);
+    particles.Update(dt);
 
     if ( paused || menu_is_open ) {
-        black_hole->update(dt); // the black hole always updates
+        black_hole->Update(dt); // the black hole always updates
         return;
     }
 
-    trySpawnPowerup();
+    TrySpawnPowerup();
     
-    for ( int i = 0; i < getNumPlayers(); i++ ) {
+    for ( int i = 0; i < GetNumPlayers(); i++ ) {
         players[i]->updateFromInputState(player_input[i], dt);
     }
     
     for ( unsigned i = 0; i <entities.size(); i++ ) {
-        entities[i]->update(dt);
+        entities[i]->Update(dt);
     }
             
     // resolve collisions
@@ -177,9 +177,9 @@ void Game::update(float dt)
     int count = (int)entities.size();
     for ( int i = 0; i < count; i++ ) {
         for ( int j = i + 1; j < count; j++ ) {
-            if ( entities[i]->isColliding(entities[j]) ) {
-                entities[i]->contact(entities[j]);
-                entities[j]->contact(entities[i]);
+            if ( entities[i]->IsColliding(entities[j]) ) {
+                entities[i]->Contact(entities[j]);
+                entities[j]->Contact(entities[i]);
             }
         }
     }
@@ -196,23 +196,23 @@ void Game::update(float dt)
 }
 
 
-void Game::getPlayerInput()
+void Game::GetPlayerInput()
 {
-    for ( int i = 0; i < game.getNumPlayers(); i++ ) {
-        player_input[i] = input.getInputState(i);
+    for ( int i = 0; i < game.GetNumPlayers(); i++ ) {
+        player_input[i] = input.GetInputState(i);
     }
 }
 
 
-void Game::serverUpdate(float dt)
+void Game::ServerUpdate(float dt)
 {
     // get input from myself and clients
-    player_input[0] = input.getInputState(0); // get my own state
+    player_input[0] = input.GetInputState(0); // get my own state
     for ( client_id_t id = 0; id < num_clients; id++ ) {
         player_input[id + 1] = HostReceiveInputState(id);
     }
 
-    update(dt);
+    Update(dt);
     
     // send updated game to each client:
     for ( client_id_t id = 0; id < num_clients; id++ ) {
@@ -224,7 +224,7 @@ void Game::serverUpdate(float dt)
         // send each entity
         for ( u16 i = 0; i < count; i++ ) {
             // send type's size
-            u8 size = (u8)entities[i]->size();
+            u8 size = (u8)entities[i]->Size();
             SDLNet_TCP_Send(clients[id], &size, sizeof(size));
             
             // send entity
@@ -234,13 +234,13 @@ void Game::serverUpdate(float dt)
 }
 
 
-void Game::clientUpdate()
+void Game::ClientUpdate()
 {
     // send my input to the server
-    InputState my_input = input.getInputState(0);
+    InputState my_input = input.GetInputState(0);
     ClientSendInputState(my_input);
     
-    clearEntities();
+    ClearEntities();
     
     // get updated game from server:
     // receive num entities
@@ -260,17 +260,17 @@ void Game::clientUpdate()
         
         // reload texture and put it in
         Entity * entity = (Entity *)data;
-        entity->loadTexture(entity->getTextureName());
+        entity->LoadTexture(entity->GetTextureName());
         entities.push_back(entity);
     }
 }
 
 
-void Game::netUpdate(float dt)
+void Game::NetUpdate(float dt)
 {
     if ( my_id == SERVER_ID ) {
-        serverUpdate(dt);
+        ServerUpdate(dt);
     } else {
-        clientUpdate();
+        ClientUpdate();
     }
 }

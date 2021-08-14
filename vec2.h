@@ -16,13 +16,13 @@ struct Vec2
     
     Vec2(float a = 0.0f, float b = 0.0f);
     
-    void  zero();
-    float length() const;
-    float lengthSquared() const;
-    float normalize();
-    bool  compare(const Vec2 & a, float epsilon = VEC_EPSILON) const;
-    void  rotateByDegrees(float degrees);
-    void  rotateByRadians(float radians);
+    void  Zero();
+    float Length() const;
+    float LengthSqr() const;
+    float Normalize();
+    bool  Compare(const Vec2 & a, float epsilon = VEC_EPSILON) const;
+    void  RotateByDegrees(float degrees);
+    void  RotateByRadians(float radians);
     void  print() const;
     
     Vec2 operator+(const Vec2 & a) const;

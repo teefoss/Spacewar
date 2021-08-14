@@ -28,19 +28,19 @@ class InputManager
 {
 public:
     InputManager() { }
-    void init(SDL_Renderer * renderer);
+    void Init(SDL_Renderer * renderer);
     
-    void reconnectControllers();
-    int numControllers();
-    void renderConsole(void);
-    InputState getInputState(int player_num);
+    void ReconnectControllers();
+    int NumControllers();
+    void RenderConsole(void);
+    InputState GetInputState(int player_num);
     
 private:
-    void updateConsole(void);
-    void disconnectControllers(void);
-    void connectControllers(void);
-    InputState getKeyboardInputState(int which_keyboard);
-    InputState getControllerInputState(int controller_num);
+    void UpdateConsole(void);
+    void DisconnectControllers(void);
+    void ConnectControllers(void);
+    InputState GetKeyboardInputState(int which_keyboard);
+    InputState GetControllerInputState(int controller_num);
 
     const unsigned char * keys;
     SDL_GameController * controllers[MAX_CONTROLLERS];

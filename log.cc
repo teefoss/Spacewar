@@ -4,10 +4,10 @@
 FILE * Log::log = NULL;
 
 
-void Log::create(const char * path)
+void Log::Create(const char * path)
 {
     if ( log ) {
-        destroy();
+        Destroy();
     }
     
     log = fopen(path, "w");
@@ -18,7 +18,7 @@ void Log::create(const char * path)
 }
 
 
-void Log::destroy(void)
+void Log::Destroy(void)
 {
     if ( log == NULL ) {
         return;

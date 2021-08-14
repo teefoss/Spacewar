@@ -73,9 +73,9 @@ Player::Player(int index)
 {
     number = index;
     
-    resetPosition();
+    ResetPosition();
         
-    SDL_Renderer * renderer = App::shared()->getRenderer();
+    SDL_Renderer * renderer = App::Shared()->GetRenderer();
     hud_texture = SDL_CreateTexture(renderer,
                                     SDL_PIXELFORMAT_RGBA8888,
                                     SDL_TEXTUREACCESS_TARGET,
@@ -96,18 +96,18 @@ Player::~Player()
 }
 
 
-int Player::size()
+int Player::Size()
 {
     return (int)sizeof(*this);
 }
 
 
-void Player::makeHUDTexture(SDL_Renderer * renderer)
+void Player::MakeHUDTexture(SDL_Renderer * renderer)
 {
     // TODO: class members?
-    ResourceManager& rm = ResourceManager::shared();
-    SDL_Texture * ship_texture = rm.getTexture("ships.png", renderer);
-    SDL_Texture * bullet_texture = rm.getTexture("bullets.png", renderer);
+    ResourceManager& rm = ResourceManager::Shared();
+    SDL_Texture * ship_texture = rm.GetTexture("ships.png", renderer);
+    SDL_Texture * bullet_texture = rm.GetTexture("bullets.png", renderer);
     
     SDL_SetRenderTarget(renderer, hud_texture);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -154,15 +154,15 @@ void Player::makeHUDTexture(SDL_Renderer * renderer)
     }
     
     SDL_SetRenderTarget(renderer, NULL);
-    rm.destroyTexture("ships.png");
-    rm.destroyTexture("bullets.png");
+    rm.DestroyTexture("ships.png");
+    rm.DestroyTexture("bullets.png");
 }
 
 
 
-void Player::renderHUD(SDL_Renderer * renderer)
+void Player::RenderHUD(SDL_Renderer * renderer)
 {
-    makeHUDTexture(renderer); // TODO: only as needed
+    MakeHUDTexture(renderer); // TODO: only as needed
     
     SDL_RendererFlip flip;
     
@@ -177,13 +177,13 @@ void Player::renderHUD(SDL_Renderer * renderer)
 }
 
 
-void Player::explosionSound()
+void Player::ExplosionSound()
 {
     RandomizedSound(60, 400, 1600);
 }
 
 
-void Player::rotateByDegrees(float degrees)
+void Player::RotateByDegrees(float degrees)
 {
     float new_degrees = degrees;
     
@@ -191,22 +191,22 @@ void Player::rotateByDegrees(float degrees)
         new_degrees *= 0.25f;
     }
     
-    Entity::rotateByDegrees(new_degrees);
+    Entity::Rotate(new_degrees);
 }
 
 
-void Player::resetPosition()
+void Player::ResetPosition()
 {
     position = player_info[number].position;
-    velocity.zero();
-    setOrientation(player_info[number].direction);
+    velocity.Zero();
+    SetOrientation(player_info[number].direction);
 }
 
 
 
-void Player::shootBullet()
+void Player::ShootBullet()
 {
-    if ( isRespawning() ) {
+    if ( IsRespawning() ) {
         return;
     }
     
@@ -223,9 +223,9 @@ void Player::shootBullet()
         bullet->velocity *= BULLET_MAX_VELOCITY;
         bullet->velocity += velocity;
         if ( i == 1 ) {
-            bullet->velocity.rotateByDegrees(-10);
+            bullet->velocity.RotateByDegrees(-10);
         } else if ( i == 2 ) {
-            bullet->velocity.rotateByDegrees(10);
+            bullet->velocity.RotateByDegrees(10);
         }
         
         game.entities.push_back(bullet);
@@ -244,19 +244,19 @@ void Player::shootBullet()
 
 
 // dos_color = -1: random color
-void Player::explode(int dos_color)
+void Player::Explode(int dos_color)
 {
-    if ( !isActive() ) {
+    if ( !IsActive() ) {
         return;
     }
     
     respawn_timer = RESPAWN_TICKS;
     shoot_cooldown_timer = 0;
     num_bullets = MAX_BULLETS;
-    this->emitParticles(100, dos_color);
+    this->EmitParticles(100, dos_color);
     powerup = POWERUP_NONE;
 
-    resetPosition();
+    ResetPosition();
 }
 
 
@@ -265,16 +265,16 @@ void Player::updateFromInputState(InputState input_state, float dt)
     float rotation_speed = PLAYER_ROTATION_SPEED * dt;
     
     if ( input_state.left )
-        rotateByDegrees(-rotation_speed);
+        RotateByDegrees(-rotation_speed);
     
     if ( input_state.right )
-        rotateByDegrees(+rotation_speed);
+        RotateByDegrees(+rotation_speed);
     
     if ( input_state.thrust )
-        thrust(dt);
+        Thrust(dt);
     
     if ( input_state.shoot && (powerup != POWERUP_LASER) )
-        shootBullet();
+        ShootBullet();
     
     if ( input_state.shield ) {
         if ( shield_strength ) {
@@ -286,7 +286,7 @@ void Player::updateFromInputState(InputState input_state, float dt)
 }
 
 
-void Player::update(float dt)
+void Player::Update(float dt)
 {
     if ( num_lives == 0 ) {
         return;
@@ -326,53 +326,53 @@ void Player::update(float dt)
         }
     }
     
-    updatePosition(dt, true);
+    UpdatePosition(dt, true);
     
     // shoot laser if available
     
     if ( powerup == POWERUP_LASER ) {
-        emitParticles(1, RANDOM_COLORS);
+        EmitParticles(1, RANDOM_COLORS);
         
-        for ( int i = 0; i < game.getNumPlayers(); i++ ) {
-            if ( i == number || !game.players[i]->isActive() ) {
+        for ( int i = 0; i < game.GetNumPlayers(); i++ ) {
+            if ( i == number || !game.players[i]->IsActive() ) {
                 continue;
             }
-            laserPlayer(game.players[i]);
+            LaserPlayer(game.players[i]);
         }
     }
 }
 
 
 
-Vec2 Player::nozzlePoint()
+Vec2 Player::NozzlePoint()
 {
     return position + orientation * radius;
 }
 
 
 
-Vec2 Player::laserEndPoint()
+Vec2 Player::LaserEndPoint()
 {
     return position + orientation * GAME_W * 2;
 }
 
 
 
-void Player::laserPlayer(Player * other_player)
+void Player::LaserPlayer(Player * other_player)
 {
-    if ( LineCircleIntersection(nozzlePoint(),
-                                laserEndPoint(),
+    if ( LineCircleIntersection(NozzlePoint(),
+                                LaserEndPoint(),
                                 other_player->position,
                                 other_player->radius) )
     {
-        other_player->explode(player_info[other_player->number].color);
-        other_player->explosionSound();
+        other_player->Explode(player_info[other_player->number].color);
+        other_player->ExplosionSound();
     }
 }
 
 
 
-void Player::draw(SDL_Renderer * renderer)
+void Player::Draw(SDL_Renderer * renderer)
 {
     if ( num_lives == 0 ) {
         return;
@@ -391,11 +391,11 @@ void Player::draw(SDL_Renderer * renderer)
     bool flash = respawn_timer < RESPAWN_TICKS / 2 && FlashInterval(100);
     
     if ( !respawn_timer || flash ) {
-        Entity::drawSprite(renderer, number);
+        Entity::DrawSprite(renderer, number);
         switch ( powerup ) {
             case POWERUP_LASER: {
                 DOS_SetColor(renderer, DOS_RandomColor());
-                DrawLine(renderer, nozzlePoint(), laserEndPoint());
+                DrawLine(renderer, NozzlePoint(), LaserEndPoint());
                 break;
             }
             case POWERUP_SHOWPATH: {
@@ -408,7 +408,7 @@ void Player::draw(SDL_Renderer * renderer)
                 for ( int i = 0; i < 2000; i++ ) {
                     pos += vel * dt;
                     Vec2 v = Vec2(GAME_W/2, GAME_H/2) - pos;
-                    v *= 1.0f / (v.length() * BLACK_HOLE_GRAVITY) * dt;
+                    v *= 1.0f / (v.Length() * BLACK_HOLE_GRAVITY) * dt;
                     vel += v;
                     if ( (i & 10) == 0 ) {
                         SDL_RenderDrawPoint(renderer, pos.x, pos.y);
@@ -427,7 +427,7 @@ void Player::draw(SDL_Renderer * renderer)
         DrawCircle(renderer, position.x, position.y, SHIELD_RADIUS);
         
         for ( int i = 0; i < 100; i++ ) {
-            Vec2 pt = randomPointWithinRange(SHIELD_RADIUS);
+            Vec2 pt = RandomPointWithinRange(SHIELD_RADIUS);
             DOS_SetColor(renderer, DOS_RandomColor());
             SDL_RenderDrawPoint(renderer, pt.x, pt.y);
         }
@@ -450,21 +450,21 @@ void Player::draw(SDL_Renderer * renderer)
 }
 
 
-void Player::setPowerupEffect(Powerup * pup)
+void Player::SetPowerupEffect(Powerup * pup)
 {
     this->powerup = pup->type;
     powerup_timer = pup->effect_time;
 }
 
 
-void Player::eatPowerup(Powerup * pup)
+void Player::EatPowerup(Powerup * pup)
 {
     switch ( pup->type ) {
         case POWERUP_ZEROG:
         case POWERUP_MULTISHOT:
         case POWERUP_LASER:
         case POWERUP_SHOWPATH:
-            setPowerupEffect(pup);
+            SetPowerupEffect(pup);
             break;
         case POWERUP_THREEUP:
             num_lives += 2; // fall-through
@@ -486,13 +486,13 @@ void Player::eatPowerup(Powerup * pup)
                 switch ( game.entities[i]->type ) {
                     case ENTITY_PLAYER: {
                         Player * pl = (Player *)game.entities[i];
-                        pl->explode(DOS_RED);
+                        pl->Explode(DOS_RED);
                         pl->num_lives--;
                         break;
                     }
                     case ENTITY_BULLET:
                     case ENTITY_POWERUP:
-                        game.entities[i]->emitParticles(10, DOS_RED);
+                        game.entities[i]->EmitParticles(10, DOS_RED);
                         game.entities[i]->alive = false;
                         break;
                     default:
@@ -509,26 +509,26 @@ void Player::eatPowerup(Powerup * pup)
 }
 
 
-void Player::contact(Entity * hit)
+void Player::Contact(Entity * hit)
 {
-    if ( !isActive() ) {
+    if ( !IsActive() ) {
         return;
     }
     
     switch ( hit->type ) {
         case ENTITY_PLAYER: {
             Player * opponent = (Player *)hit;
-            if ( opponent->isActive() ) {
+            if ( opponent->IsActive() ) {
                 num_lives--;
                 opponent->num_lives--;
-                explode(RANDOM_COLORS);
-                opponent->explode(RANDOM_COLORS);
-                explosionSound();
+                Explode(RANDOM_COLORS);
+                opponent->Explode(RANDOM_COLORS);
+                ExplosionSound();
             }
             break;
         }
         case ENTITY_POWERUP:
-            eatPowerup((Powerup *)hit);
+            EatPowerup((Powerup *)hit);
             break;
         default:
             break;
@@ -537,28 +537,28 @@ void Player::contact(Entity * hit)
 
 
 
-bool Player::isDead()
+bool Player::IsDead()
 {
     return (respawn_timer > RESPAWN_TICKS / 2) || num_lives <= 0;
 }
 
 
 
-bool Player::isRespawning()
+bool Player::IsRespawning()
 {
     return respawn_timer > 0 && respawn_timer < RESPAWN_TICKS / 2;
 }
 
 
 
-bool Player::isActive()
+bool Player::IsActive()
 {
-    return !isRespawning() && !isDead();
+    return !IsRespawning() && !IsDead();
 }
 
 
 
-void Player::thrust(float dt)
+void Player::Thrust(float dt)
 {
     if ( powerup == POWERUP_ZEROG ) {
         velocity += orientation * (PLAYER_THRUST + 50.0f) * dt;
@@ -569,12 +569,12 @@ void Player::thrust(float dt)
     // exhaust
     Vec2 origin, exhaust_v;
     
-    origin = randomPointWithinRange(radius / 2.0f);
+    origin = RandomPointWithinRange(radius / 2.0f);
     exhaust_v = orientation;
-    exhaust_v.normalize();
-    exhaust_v.rotateByDegrees(180);
+    exhaust_v.Normalize();
+    exhaust_v.RotateByDegrees(180);
     exhaust_v *= 100.0f;
     SDL_Color sdl_color = DOS_CGAColorToSDLColor(player_info[number].color);
     int time = Random(0, 50);
-    particles.spawn(origin, exhaust_v, time, sdl_color);
+    particles.Spawn(origin, exhaust_v, time, sdl_color);
 }

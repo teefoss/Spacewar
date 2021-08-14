@@ -8,23 +8,23 @@ Vec2::Vec2(float a, float b)
     y = b;
 }
 
-void Vec2::zero()
+void Vec2::Zero()
 {
     x = 0.0f;
     y = 0.0f;
 }
 
-float Vec2::length() const
+float Vec2::Length() const
 {
     return sqrtf(x * x + y * y);
 }
 
-float Vec2::lengthSquared() const
+float Vec2::LengthSqr() const
 {
     return x * x + y * y;
 }
 
-float Vec2::normalize()
+float Vec2::Normalize()
 {
     float sqr_length = x * x + y * y;
     float inv_length = 1.0f / sqrtf(sqr_length);
@@ -34,7 +34,7 @@ float Vec2::normalize()
     return inv_length * sqr_length;
 }
 
-bool Vec2::compare(const Vec2 & a, float epsilon) const
+bool Vec2::Compare(const Vec2 & a, float epsilon) const
 {
     if ( fabsf( x - a.x ) > epsilon ) {
         return false;
@@ -52,13 +52,13 @@ void Vec2::print() const
     printf("(%.2f, %.2f)\n", x, y);
 }
 
-void Vec2::rotateByDegrees(float degrees)
+void Vec2::RotateByDegrees(float degrees)
 {
     float radians = DEG_TO_RAD(degrees);
-    rotateByRadians(radians);
+    RotateByRadians(radians);
 }
 
-void Vec2::rotateByRadians(float radians)
+void Vec2::RotateByRadians(float radians)
 {
     float new_x = cos(radians) * x - sin(radians) * y;
     float new_y = sin(radians) * x + cos(radians) * y;
@@ -113,10 +113,10 @@ void Vec2::operator/=(float a)
 
 bool Vec2::operator==(Vec2 & a) const
 {
-    return compare(a);
+    return Compare(a);
 }
 
 bool Vec2::operator!=(Vec2 & a) const
 {
-    return !compare(a);
+    return !Compare(a);
 }

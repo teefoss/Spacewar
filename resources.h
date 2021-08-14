@@ -10,7 +10,7 @@
 class ResourceManager
 {
 public:
-    static ResourceManager& shared()
+    static ResourceManager& Shared()
     {
         static ResourceManager instance;
         return instance;
@@ -18,8 +18,8 @@ public:
     ResourceManager(ResourceManager const&) = delete;
     void operator=(ResourceManager const&) = delete;
     
-    SDL_Texture * getTexture(const char * filename, SDL_Renderer * renderer);
-    void destroyTexture(const char * file_name);
+    SDL_Texture * GetTexture(const char * filename, SDL_Renderer * renderer);
+    void DestroyTexture(const char * file_name);
     
 private:
     ResourceManager() { };

@@ -148,13 +148,13 @@ void StartGame(void)
     main_menu_items[5].state = ITEM_ENABLED;
     current = &menus[MENU_MAIN];
     current->selected = 5;
-    game.start();
+    game.Start();
 }
 
 
 void QuitGame(void)
 {
-    App::shared()->quit();
+    App::Shared()->Quit();
 }
 
 
@@ -182,13 +182,13 @@ void NextMenu(void)
 
 void CyclePlayers()
 {
-    int n = game.getNumPlayers() + 1;
+    int n = game.GetNumPlayers() + 1;
     
-    if ( n > game.maxPlayers() ) {
+    if ( n > game.MaxPlayers() ) {
         n = 1;
     }
     
-    game.setNumPlayers(n);
+    game.SetNumPlayers(n);
 }
 
 
@@ -206,7 +206,7 @@ void TogglePowerups()
 
 void InitMenu()
 {
-    SDL_Renderer * renderer = App::shared()->getRenderer();
+    SDL_Renderer * renderer = App::Shared()->GetRenderer();
     con = DOS_NewConsole(renderer, 64, 20, DOS_MODE80);
     DOS_CSetCursorType(con, DOS_CURSOR_NONE);
     current = &menus[MENU_MAIN];
@@ -264,7 +264,7 @@ void ProcessMenuKey(SDL_Keycode key)
     
     switch ( key ) {
         case SDLK_BACKSLASH:
-            App::shared()->toggleFullscreen();
+            App::Shared()->ToggleFullscreen();
             break;
         case SDLK_DOWN:
             MenuScrollSound();

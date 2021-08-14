@@ -30,7 +30,7 @@ App::App(int argc, char ** argv)
     m_instance = this;
     m_args = (Args){ argc, argv };
 
-    Log::create("log.txt");
+    Log::Create("log.txt");
     InitSDL();
     
     int scale = 2;
@@ -52,10 +52,10 @@ App::App(int argc, char ** argv)
 
     InitNet();
     InitMenu();
-    input.init(m_renderer);
+    input.Init(m_renderer);
     DOS_InitSound();
 
-    game.init();
+    game.Init();
     
 #if 1
     LOG("size of player:  %zu bytes\n", sizeof(Player));
@@ -68,18 +68,18 @@ App::App(int argc, char ** argv)
 
 App::~App()
 {
-    game.quit();
+    game.Quit();
     NetQuit();
     
     SDL_DestroyRenderer(m_renderer);
     SDL_DestroyWindow(m_window);
     SDL_Quit();
     
-    Log::destroy();
+    Log::Destroy();
 }
 
 
-void App::toggleFullscreen()
+void App::ToggleFullscreen()
 {
     if ( m_fullscreen ) {
         SDL_SetWindowFullscreen(m_window, 0);
@@ -91,7 +91,7 @@ void App::toggleFullscreen()
 }
 
 
-void App::processControllerButton(u8 button)
+void App::ProcessControllerButton(u8 button)
 {
     if ( button == SDL_CONTROLLER_BUTTON_START ) {
         menu_is_open = !menu_is_open;
@@ -103,7 +103,7 @@ void App::processControllerButton(u8 button)
 }
 
 
-void App::processKeyDown(SDL_Keycode key)
+void App::ProcessKeyDown(SDL_Keycode key)
 {
     switch ( key ) {
         case SDLK_ESCAPE:
@@ -113,7 +113,7 @@ void App::processKeyDown(SDL_Keycode key)
             DOS_PlayQueuedSound();
             break;
         case SDLK_BACKSLASH:
-            toggleFullscreen();
+            ToggleFullscreen();
             break;
         case SDLK_p:
             game.paused = !game.paused;
@@ -123,7 +123,7 @@ void App::processKeyDown(SDL_Keycode key)
 }
 
 
-void App::processEvents()
+void App::ProcessEvents()
 {
     SDL_Event event;
     
@@ -136,15 +136,15 @@ void App::processEvents()
                 if ( menu_is_open ) {
                     ProcessMenuKey(event.key.keysym.sym);
                 } else {
-                    processKeyDown(event.key.keysym.sym);
+                    ProcessKeyDown(event.key.keysym.sym);
                 }
                 break;
             case SDL_CONTROLLERDEVICEADDED:
             case SDL_CONTROLLERDEVICEREMOVED:
-                input.reconnectControllers();
+                input.ReconnectControllers();
                 break;
             case SDL_CONTROLLERBUTTONDOWN:
-                processControllerButton(event.cbutton.button);
+                ProcessControllerButton(event.cbutton.button);
                 break;
             default:
                 break;
@@ -153,7 +153,7 @@ void App::processEvents()
 }
 
 
-void App::run()
+void App::Run()
 {
     //int last_ms = 0;
     int ticks = 0;
@@ -174,21 +174,21 @@ void App::run()
             dt = 0.05f;
         }
         
-        processEvents();
+        ProcessEvents();
         
         if ( is_network_game ) {
-            game.netUpdate(dt);
+            game.NetUpdate(dt);
         } else {
-            game.getPlayerInput();
-            game.update(dt);
+            game.GetPlayerInput();
+            game.Update(dt);
         }
         
-        game.draw(m_renderer);
+        game.Draw(m_renderer);
     }
 }
 
 
-void App::quit()
+void App::Quit()
 {
     m_running = false;
 }
