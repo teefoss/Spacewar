@@ -16,7 +16,7 @@ static SDL_Rect bullet_bounds = {
 Bullet::Bullet(Vec2 position, int who_shot)
 : Entity(ENTITY_BULLET, position, BULLET_RADIUS, "bullets.png")
 {
-    player_index = who_shot;
+    id = who_shot;
 }
 
 
@@ -46,7 +46,7 @@ void Bullet::Update(float dt)
 
 void Bullet::Draw(SDL_Renderer * renderer)
 {
-    Entity::DrawSprite(renderer, player_index);
+    Entity::DrawSprite(renderer, id);
 }
 
 
@@ -55,10 +55,10 @@ void Bullet::Contact(Entity * hit)
     switch ( hit->type ) {
         case ENTITY_PLAYER: {
             Player * player = (Player *)hit;
-            if ( player_index != player->number ) { // don't shoot yourself
+            if ( id != player->id ) { // don't shoot yourself
                 player->num_lives--;
                 // TODO: 0 lives
-                player->Explode(player_info[player->number].color);
+                player->Explode(player_info[player->id].color);
                 RandomizedSound(30, 800, 1200);
                 alive = false;
             }
@@ -66,7 +66,7 @@ void Bullet::Contact(Entity * hit)
         }
         case ENTITY_BULLET: {
             Bullet * other_bullet = (Bullet *)hit;
-            if ( player_index != other_bullet->player_index ) {
+            if ( id != other_bullet->id ) {
                 this->Explode(DOS_RandomColor(), 1200, 1600);
                 other_bullet->EmitParticles(50, DOS_RandomColor());
                 other_bullet->alive = false;

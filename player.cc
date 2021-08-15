@@ -69,7 +69,7 @@ const PlayerInfo player_info[MAX_PLAYERS] =
 Player::Player(int index)
 : Entity(ENTITY_PLAYER, Vec2(0, 0), PLAYER_RADIUS, "ships.png")
 {
-    number = index;
+    id = index;
     
     ResetPosition();
         
@@ -113,7 +113,7 @@ void Player::MakeHUDTexture(SDL_Renderer * renderer)
     
     const int margin = 2;
     const int ship_diam = (int)(radius * 2.0f);
-    SDL_Rect src = { number * ship_diam, 0, ship_diam, ship_diam };
+    SDL_Rect src = { id * ship_diam, 0, ship_diam, ship_diam };
     SDL_Rect dst = { 0, 0, ship_diam, ship_diam };
     
     for ( int i = 0; i < num_lives; i++ ) {
@@ -134,16 +134,16 @@ void Player::MakeHUDTexture(SDL_Renderer * renderer)
 
     DOS_SetColor(renderer, DOS_GRAY);
     SDL_RenderFillRect(renderer, &bar[0]);
-    DOS_SetColor(renderer, player_info[number].color);
+    DOS_SetColor(renderer, player_info[id].color);
     SDL_RenderFillRect(renderer, &bar[1]);
     
     // bullets
     
     const int bullet_diam = (int)(BULLET_RADIUS * 2.0f);
-    src = (SDL_Rect){ number * bullet_diam, 0, bullet_diam, bullet_diam };
+    src = (SDL_Rect){ id * bullet_diam, 0, bullet_diam, bullet_diam };
     dst = (SDL_Rect){ 0, bar[0].y + bar[0].h + margin, bullet_diam, bullet_diam };
     
-    DOS_SetColor(renderer, player_info[number].color);
+    DOS_SetColor(renderer, player_info[id].color);
     for ( int i = 0; i < num_bullets; i++ ) {
         SDL_RenderCopy(renderer, bullet_texture, &src, &dst);
         dst.x += bullet_diam + margin;
@@ -160,13 +160,13 @@ void Player::RenderHUD(SDL_Renderer * renderer)
     
     SDL_RendererFlip flip;
     
-    if ( number == 1 || number == 3 ) {
+    if ( id == 1 || id == 3 ) {
         flip = SDL_FLIP_HORIZONTAL;
     } else {
         flip = SDL_FLIP_NONE;
     }
 
-    const SDL_Rect * dst = &player_info[number].hud_rect;
+    const SDL_Rect * dst = &player_info[id].hud_rect;
     SDL_RenderCopyEx(renderer, hud_texture, NULL, dst, 0, NULL, flip);
 }
 
@@ -191,9 +191,9 @@ void Player::RotateByDegrees(float degrees)
 
 void Player::ResetPosition()
 {
-    position = player_info[number].position;
+    position = player_info[id].position;
     velocity.Zero();
-    SetOrientation(player_info[number].direction);
+    SetOrientation(player_info[id].direction);
 }
 
 
@@ -208,7 +208,7 @@ void Player::ShootBullet()
     Vec2 bullet_position = position + orientation * radius;
     
     for ( int i = 0; i < num_shots; i++ ) {
-        Bullet * bullet = new Bullet(bullet_position, number);
+        Bullet * bullet = new Bullet(bullet_position, id);
         bullet->velocity = orientation;
         bullet->velocity *= BULLET_MAX_VELOCITY;
         bullet->velocity += velocity;
@@ -324,7 +324,7 @@ void Player::Update(float dt)
         EmitParticles(1, RANDOM_COLORS);
         
         for ( int i = 0; i < game.GetNumPlayers(); i++ ) {
-            if ( i == number || !game.players[i]->IsActive() ) {
+            if ( i == id || !game.players[i]->IsActive() ) {
                 continue;
             }
             LaserPlayer(game.players[i]);
@@ -355,7 +355,7 @@ void Player::LaserPlayer(Player * other_player)
                                 other_player->position,
                                 other_player->radius) )
     {
-        other_player->Explode(player_info[other_player->number].color);
+        other_player->Explode(player_info[other_player->id].color);
         other_player->ExplosionSound();
     }
 }
@@ -381,7 +381,7 @@ void Player::Draw(SDL_Renderer * renderer)
     bool flash = respawn_timer < RESPAWN_TICKS / 2 && FlashInterval(100);
     
     if ( !respawn_timer || flash ) {
-        Entity::DrawSprite(renderer, number);
+        Entity::DrawSprite(renderer, id);
         switch ( powerup ) {
             case POWERUP_LASER: {
                 DOS_SetColor(renderer, DOS_RandomColor());
@@ -389,7 +389,7 @@ void Player::Draw(SDL_Renderer * renderer)
                 break;
             }
             case POWERUP_SHOWPATH: {
-                DOS_Color color = player_info[number].color;
+                DOS_Color color = player_info[id].color;
                 DOS_SetColor(renderer, (DOS_Color)((int)color - 8));
                 Vec2 pos = position;
                 Vec2 vel = velocity;
@@ -564,7 +564,7 @@ void Player::Thrust(float dt)
     exhaust_v.Normalize();
     exhaust_v.RotateByDegrees(180);
     exhaust_v *= 100.0f;
-    SDL_Color sdl_color = DOS_CGAColorToSDLColor(player_info[number].color);
+    SDL_Color sdl_color = DOS_CGAColorToSDLColor(player_info[id].color);
     int time = Random(0, 50);
     particles.Spawn(origin, exhaust_v, time, sdl_color);
 }

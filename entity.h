@@ -49,7 +49,8 @@ public:
     bool IsColliding(Entity * other);
     void Rotate(float degrees);
     void LoadTexture(void);
-    
+
+    u8 id;
     Vec2 velocity;
     EntityType type;
     boolean alive = true;

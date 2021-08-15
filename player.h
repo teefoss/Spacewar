@@ -53,7 +53,7 @@ public:
     void ExplosionSound(void);
     void RenderHUD(SDL_Renderer * renderer);
     
-    u8 number;
+    //u8 number;
     s8 num_lives = MAX_LIVES; // TODO: need a kill function
     s8 num_bullets = MAX_BULLETS;
     PowerupType powerup = POWERUP_NONE;
