@@ -19,7 +19,7 @@ public:
     
     void Init(SDL_Renderer * renderer);
     SDL_Texture * GetTexture(const char * filename);
-    void DestroyTexture(const char * file_name);
+    void ReleaseTexture(const char * file_name);
     
 private:
     ResourceManager() { };
@@ -27,7 +27,7 @@ private:
     
     SDL_Renderer * m_renderer = NULL;
     std::unordered_map<const char *, SDL_Texture *> m_textures;
-    std::unordered_map<const char *, int> m_tracker;
+    std::unordered_map<const char *, int> m_reference_counts;
 };
 
 #endif /* resources_h */

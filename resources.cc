@@ -1,5 +1,6 @@
 #include "resources.h"
 #include "log.h"
+#include "defines.h"
 
 #include <SDL2/SDL_image.h>
 #include <stdlib.h>
@@ -23,26 +24,25 @@ ResourceManager::GetTexture(const char * file_name)
 {
     auto element = m_textures.find(file_name);
     
-    if ( element != m_textures.end() ) {
-        // found it
-        auto tracker = m_tracker.find(file_name);
-        ++tracker->second;
-        LOG("GetTexture: %s already exists (count is now %d)\n", file_name, tracker->second);
+    if ( element != m_textures.end() ) { // found
+        
+        auto ref_count = m_reference_counts.find(file_name);
+        ++ref_count->second;
+        
         return element->second;
-    } else { // does not exist, load it
-        // append directory name
-        LOG("GetTexture: %s not found, loading...\n", file_name);
+        
+    } else { // not found, load it
+
         char * path = new char[strlen(file_name) + strlen(GRAPHICS)];
         strcpy(path, GRAPHICS);
         strcat(path, file_name);
               
         SDL_Texture * texture = IMG_LoadTexture(m_renderer, path);
         if ( texture == NULL ) {
-            fprintf(stderr, "failed to load texture %s\n", path);
-            exit(EXIT_FAILURE);
+            SDL_ERROR("IMG_LoadTexture failed\n");
         }
         
-        m_tracker.insert( {file_name, 1} );
+        m_reference_counts.insert( {file_name, 1} );
         m_textures.insert( {file_name, texture} );
         delete[] path;
         
@@ -51,24 +51,20 @@ ResourceManager::GetTexture(const char * file_name)
 }
 
 
-void ResourceManager::DestroyTexture(const char * file_name)
+void ResourceManager::ReleaseTexture(const char * file_name)
 {
     auto element = m_textures.find(file_name);
-    LOG("DestoryTexture: trying to remove %s...\n", file_name);
     
     if ( element != m_textures.end() ) {
-        LOG("-- removing %s\n", file_name);
-        auto tracker = m_tracker.find(file_name);
+
+        auto ref_count = m_reference_counts.find(file_name);
                 
-        if ( tracker->second == 1 ) {
-            tracker->second = 0;
-            LOG("-- unloading\n");
+        if ( ref_count->second == 1 ) {
+            ref_count->second = 0;
             SDL_DestroyTexture(element->second);
             m_textures.erase(element);
-            m_tracker.erase(tracker);
         } else {
-            --tracker->second;
+            --ref_count->second;
         }
-        LOG("-- count is now %d\n", tracker->second);
     }
 }

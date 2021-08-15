@@ -27,11 +27,9 @@ Entity::Entity
 }
 
 
-
 Entity::~Entity()
 {
-    LOG("destory entity, remove texture...\n");
-    ResourceManager::Shared().DestroyTexture(texture_name);
+    ResourceManager::Shared().ReleaseTexture(texture_name);
 }
 
 
@@ -39,7 +37,7 @@ void Entity::LoadTexture()
 {
     ResourceManager& resource_manager = ResourceManager::Shared();
     if ( texture ) {
-        resource_manager.DestroyTexture(texture_name);
+        resource_manager.ReleaseTexture(texture_name);
     }
     texture = ResourceManager::Shared().GetTexture(texture_name);
 }

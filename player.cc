@@ -93,7 +93,7 @@ Player::Player(int index)
 Player::~Player()
 {
     SDL_DestroyTexture(hud_texture);
-    ResourceManager::Shared().DestroyTexture("bullets.png");
+    ResourceManager::Shared().ReleaseTexture("bullets.png");
 }
 
 

@@ -53,7 +53,6 @@ void Game::Quit()
 
 void Game::ClearEntities()
 {
-    LOG("clearing entities\n");
     for ( unsigned i = 0; i < entities.size(); i++ ) {
         delete entities[i];
     }
