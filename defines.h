@@ -41,7 +41,7 @@
 #define BULLET_RECHARGE_TIME    MS_TO_TICKS(750)
 
 #define SHIELD_RADIUS           9.0f
-#define MAX_SHIELD_STRENGTH     MS_TO_TICKS(1000)
+#define MAX_SHIELD_STRENGTH     MS_TO_TICKS(500)
 
 #define RANDOM_COLORS           -1
 

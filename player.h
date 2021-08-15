@@ -52,6 +52,7 @@ public:
     void LaserPlayer(Player * other_player);
     void ExplosionSound(void);
     void RenderHUD(SDL_Renderer * renderer);
+    bool IsColliding(Entity * other);
     
     //u8 number;
     s8 num_lives = MAX_LIVES; // TODO: need a kill function

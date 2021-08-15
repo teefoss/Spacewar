@@ -119,9 +119,8 @@ void Entity::EmitParticles(int count, int dos_color)
 bool Entity::IsColliding(Entity * other)
 {
     Vec2 v = position - other->position;
-    float adjust = 0.8; // actual hitbox TODO: class member?
     
-    return v.Length() < radius * adjust + other->radius * adjust;
+    return v.Length() < GetHitbox() + other->GetHitbox();
 }
 
 

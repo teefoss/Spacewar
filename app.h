@@ -33,8 +33,11 @@ public:
     void ToggleFullscreen();
     Args GetArgs() { return m_args; }
     SDL_Renderer * GetRenderer() { return m_renderer; }
+    int GetTicks() { return m_ticks; }
     
 private:
+    void InitWindow();
+    void InitRenderer();
     void ProcessEvents(void);
     void ProcessControllerButton(u8 button);
     void ProcessKeyDown(SDL_Keycode key);
@@ -45,6 +48,7 @@ private:
     bool            m_fullscreen = true;
     bool            m_running = true;
     Args            m_args;
+    int             m_ticks = 0;
 };
 
 #endif

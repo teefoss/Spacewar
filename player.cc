@@ -70,6 +70,7 @@ Player::Player(int index)
 : Entity(ENTITY_PLAYER, Vec2(0, 0), PLAYER_RADIUS, "ships.png")
 {
     id = index;
+    hitbox_adjust = 0.8f;
     
     ResetPosition();
         
@@ -100,6 +101,15 @@ Player::~Player()
 int Player::Size()
 {
     return (int)sizeof(*this);
+}
+
+
+bool Player::IsColliding(Entity * other)
+{
+    Vec2 v = position - other->GetPosition();
+    float my_radius = shield_up ? SHIELD_RADIUS : GetHitbox();
+    
+    return v.Length() < my_radius + other->GetHitbox();
 }
 
 
@@ -282,6 +292,21 @@ void Player::Update(float dt)
         return;
     }
 
+    if ( shield_up ) {
+        --shield_strength;
+        if ( shield_strength <= 0 ) {
+            shield_up = false;
+        }
+    } else {
+        if ( App::Shared()->GetTicks() % 3 == 0 ) {
+            ++shield_strength;
+            if ( shield_strength >= MAX_SHIELD_STRENGTH ) {
+                shield_strength = MAX_SHIELD_STRENGTH;
+            }
+        }
+    }
+    
+#if 0
     if ( shield_strength > 0 && shield_up ) {
         --shield_strength;
     } else if ( !shield_up ) {
@@ -290,6 +315,7 @@ void Player::Update(float dt)
             shield_strength = MAX_SHIELD_STRENGTH;
         }
     }
+#endif
     
     // run timers
     
@@ -550,6 +576,10 @@ bool Player::IsActive()
 
 void Player::Thrust(float dt)
 {
+    if ( IsDead() ) {
+        return;
+    }
+    
     if ( powerup == POWERUP_ZEROG ) {
         velocity += orientation * (PLAYER_THRUST + 50.0f) * dt;
     } else {

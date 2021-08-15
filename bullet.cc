@@ -56,11 +56,16 @@ void Bullet::Contact(Entity * hit)
         case ENTITY_PLAYER: {
             Player * player = (Player *)hit;
             if ( id != player->id ) { // don't shoot yourself
-                player->num_lives--;
-                // TODO: 0 lives
-                player->Explode(player_info[player->id].color);
-                RandomizedSound(30, 800, 1200);
-                alive = false;
+                if ( player->shield_up ) {
+                    alive = false;
+                    this->Explode(player_info[id].color, 1600, 2000);
+                } else {
+                    player->num_lives--;
+                    // TODO: 0 lives
+                    player->Explode(player_info[player->id].color);
+                    RandomizedSound(30, 800, 1200);
+                    alive = false;
+                }
             }
             break;
         }

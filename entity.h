@@ -49,6 +49,8 @@ public:
     bool IsColliding(Entity * other);
     void Rotate(float degrees);
     void LoadTexture(void);
+    float GetHitbox() { return radius * hitbox_adjust; }
+    Vec2 GetPosition() { return position; }
 
     u8 id;
     Vec2 velocity;
@@ -64,6 +66,7 @@ protected:
     Vec2 position;
     Vec2 orientation;
     float radius;
+    float hitbox_adjust = 1.0f;
     float angle; // for renderering, orientation angle in degrees
     char texture_name[100]; // (file name)
     SDL_Texture * texture;

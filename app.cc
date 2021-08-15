@@ -24,6 +24,33 @@ static void InitSDL()
     }
 }
 
+
+void App::InitWindow()
+{
+    int scale = 2;
+    m_window = SDL_CreateWindow(GAME_NAME,
+                                0, 0,
+                                GAME_W * scale, GAME_H * scale,
+                                0);
+    if ( m_window == NULL ) {
+        SDL_ERROR("SDL_CreateWindow failed");
+    }
+}
+
+
+void App::InitRenderer()
+{
+    m_renderer = SDL_CreateRenderer(m_window, -1, 0);
+    
+    if ( m_renderer == NULL ) {
+        SDL_ERROR("SDL_CreateRenderer failed");
+    }
+    
+    SDL_RenderSetLogicalSize(m_renderer, GAME_W, GAME_H);
+    SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
+}
+
+
 App::App(int argc, char ** argv)
 {
     assert( m_instance == NULL && "Tried to init another instance of App");
@@ -33,30 +60,13 @@ App::App(int argc, char ** argv)
 
     Log::Create("log.txt");
     InitSDL();
-    
-    int scale = 2;
-    m_window = SDL_CreateWindow(GAME_NAME,
-                                0, 0,
-                                GAME_W * scale, GAME_H * scale,
-                                0);
-    if ( m_window == NULL ) {
-        SDL_ERROR("SDL_CreateWindow failed");
-    }
-
-    m_renderer = SDL_CreateRenderer(m_window, -1, 0);
-    if ( m_renderer == NULL ) {
-        SDL_ERROR("SDL_CreateRenderer failed");
-    }
-    
-    SDL_RenderSetLogicalSize(m_renderer, GAME_W, GAME_H);
-    SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
-
+    InitWindow();
+    InitRenderer();
     ResourceManager::Shared().Init(m_renderer);
     InitNet();
     InitMenu();
     input.Init(m_renderer);
     DOS_InitSound();
-
     game.Init();
     
 #if 1
@@ -157,20 +167,20 @@ void App::ProcessEvents()
 
 void App::Run()
 {
-    //int last_ms = 0;
-    int ticks = 0;
+    int frame_ms = 0;
     
     if ( is_network_game ) {
         NetSync();
     }
     
     while ( m_running ) {
+        ++m_ticks;
         
-        while ( !SDL_TICKS_PASSED(SDL_GetTicks(), ticks + 16) ) {
+        while ( !SDL_TICKS_PASSED(SDL_GetTicks(), frame_ms + 16) ) {
             SDL_Delay(1);
         }
-        float dt = (SDL_GetTicks() - ticks) / 1000.0f;
-        ticks = SDL_GetTicks();
+        float dt = (SDL_GetTicks() - frame_ms) / 1000.0f;
+        frame_ms = SDL_GetTicks();
         
         if (dt > 0.05f) { // TEMP
             dt = 0.05f;
