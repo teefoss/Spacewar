@@ -72,6 +72,8 @@ private:
     s16 shoot_cooldown_timer = 0;
     s16 bullet_recharge_timer = 0;
     s16 powerup_timer = 0; // powerup active if > 0
+    SDL_Texture * hud_texture = NULL;
+    SDL_Texture * bullet_texture = NULL;
 };
 
 extern const PlayerInfo player_info[MAX_PLAYERS];

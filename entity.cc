@@ -6,6 +6,7 @@
 #include "defines.h"
 #include "resources.h"
 #include "app.h"
+#include "log.h"
 
 Entity::Entity
 (   EntityType type,
@@ -22,27 +23,25 @@ Entity::Entity
     SetOrientation(direction);
     
     strcpy(this->texture_name, texture_name);
-    LoadTexture(texture_name);
+    LoadTexture();
 }
 
 
 
 Entity::~Entity()
 {
+    LOG("destory entity, remove texture...\n");
     ResourceManager::Shared().DestroyTexture(texture_name);
 }
 
 
-void Entity::LoadTexture(const char * filename)
+void Entity::LoadTexture()
 {
-    SDL_Renderer * renderer = App::Shared()->GetRenderer();
-    texture = ResourceManager::Shared().GetTexture(filename, renderer);
-}
-
-
-const char * Entity::GetTextureName()
-{
-    return texture_name;
+    ResourceManager& resource_manager = ResourceManager::Shared();
+    if ( texture ) {
+        resource_manager.DestroyTexture(texture_name);
+    }
+    texture = ResourceManager::Shared().GetTexture(texture_name);
 }
 
 

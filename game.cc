@@ -53,6 +53,7 @@ void Game::Quit()
 
 void Game::ClearEntities()
 {
+    LOG("clearing entities\n");
     for ( unsigned i = 0; i < entities.size(); i++ ) {
         delete entities[i];
     }
@@ -260,7 +261,7 @@ void Game::ClientUpdate()
         
         // reload texture and put it in
         Entity * entity = (Entity *)data;
-        entity->LoadTexture(entity->GetTextureName());
+        entity->LoadTexture();
         entities.push_back(entity);
     }
 }

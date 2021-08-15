@@ -6,6 +6,7 @@
 #include "net.h"
 #include "menu.h"
 #include "bullet.h"
+#include "resources.h"
 
 #include <string.h>
 
@@ -50,6 +51,7 @@ App::App(int argc, char ** argv)
     SDL_RenderSetLogicalSize(m_renderer, GAME_W, GAME_H);
     SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 
+    ResourceManager::Shared().Init(m_renderer);
     InitNet();
     InitMenu();
     input.Init(m_renderer);
@@ -190,5 +192,6 @@ void App::Run()
 
 void App::Quit()
 {
+    LOG("Quitting Game\n");
     m_running = false;
 }

@@ -48,8 +48,7 @@ public:
     void ExertGravity(Entity * obj, float gravity, float dt);
     bool IsColliding(Entity * other);
     void Rotate(float degrees);
-    void LoadTexture(const char * filename);
-    const char * GetTextureName(void);
+    void LoadTexture(void);
     
     Vec2 velocity;
     EntityType type;

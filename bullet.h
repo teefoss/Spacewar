@@ -15,7 +15,6 @@ public:
     void Contact(Entity * hit) override;
     void Draw(SDL_Renderer * renderer) override;
     int Size(void) override;
-    
     void Explode(DOS_Color color, int freq_min, int freq_max);
     
 private:

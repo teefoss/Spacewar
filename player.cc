@@ -17,8 +17,6 @@ static const int player_diameter = PLAYER_RADIUS * 2;
 #define HUD_WIDTH   (MAX_LIVES * player_diameter + MAX_LIVES * 2)
 #define HUD_HEIGHT  (player_diameter + 10)
 
-static SDL_Texture * hud_texture;
-
 const PlayerInfo player_info[MAX_PLAYERS] =
 {
     // PLAYER 1 [0] UPPER LEFT
@@ -87,12 +85,15 @@ Player::Player(int index)
     }
     
     SDL_SetTextureBlendMode(hud_texture, SDL_BLENDMODE_BLEND);
+    
+    bullet_texture = ResourceManager::Shared().GetTexture("bullets.png");
 }
 
 
 Player::~Player()
 {
     SDL_DestroyTexture(hud_texture);
+    ResourceManager::Shared().DestroyTexture("bullets.png");
 }
 
 
@@ -104,11 +105,6 @@ int Player::Size()
 
 void Player::MakeHUDTexture(SDL_Renderer * renderer)
 {
-    // TODO: class members?
-    ResourceManager& rm = ResourceManager::Shared();
-    SDL_Texture * ship_texture = rm.GetTexture("ships.png", renderer);
-    SDL_Texture * bullet_texture = rm.GetTexture("bullets.png", renderer);
-    
     SDL_SetRenderTarget(renderer, hud_texture);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
@@ -121,7 +117,7 @@ void Player::MakeHUDTexture(SDL_Renderer * renderer)
     SDL_Rect dst = { 0, 0, ship_diam, ship_diam };
     
     for ( int i = 0; i < num_lives; i++ ) {
-        SDL_RenderCopyEx(renderer, ship_texture, &src, &dst, 270, NULL, SDL_FLIP_NONE);
+        SDL_RenderCopyEx(renderer, texture, &src, &dst, 270, NULL, SDL_FLIP_NONE);
         dst.x += ship_diam + margin;
     }
     
@@ -152,10 +148,8 @@ void Player::MakeHUDTexture(SDL_Renderer * renderer)
         SDL_RenderCopy(renderer, bullet_texture, &src, &dst);
         dst.x += bullet_diam + margin;
     }
-    
+
     SDL_SetRenderTarget(renderer, NULL);
-    rm.DestroyTexture("ships.png");
-    rm.DestroyTexture("bullets.png");
 }
 
 
@@ -206,14 +200,10 @@ void Player::ResetPosition()
 
 void Player::ShootBullet()
 {
-    if ( IsRespawning() ) {
+    if ( IsRespawning() || shoot_cooldown_timer > 0 || num_bullets == 0 ) {
         return;
     }
-    
-    if ( shoot_cooldown_timer > 0 || !num_bullets ) {
-        return;
-    }
-    
+        
     int num_shots = powerup == POWERUP_MULTISHOT ? 3 : 1;
     Vec2 bullet_position = position + orientation * radius;
     
