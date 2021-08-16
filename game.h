@@ -35,15 +35,16 @@ public:
     bool paused = false;
     bool match_started = false;
     int num_players = 2;
-    int aliens_on = true; // TODO: game options struct
     int powerups_on = true;
-    int black_hole_moves = false;
+    int hazards_on = true;
     
 private:
     void ClearEntities(void);
     void TrySpawnPowerup(void);
+    void TrySpawnHazard(void);
     
     BlackHole * black_hole;
+    Timer hazard_timer = Timer(SEC_TO_TICKS(20));
     int powerup_timer = SEC_TO_TICKS(10);
     InputState player_input[MAX_PLAYERS];
     int level = 1;

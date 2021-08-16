@@ -92,7 +92,7 @@ void ContinueGame(void);
 void PreviousMenu(void);
 void NextMenu(void);
 void CyclePlayers(void);
-void ToggleAliens(void);
+void ToggleHazards(void);
 void TogglePowerups(void);
 
 enum MenuList{
@@ -107,7 +107,7 @@ MenuItem new_game_items[] = {
     { "Start Game", ITEM_ENABLED,   StartGame,      0, NULL, DISPLAY_NORMAL },
     { "",           ITEM_NULL,      NULL,           0, NULL, DISPLAY_NORMAL },
     { "Players: ",  ITEM_ENABLED,   CyclePlayers,   0, NULL, DISPLAY_INTEGER },
-    { "Aliens: ",   ITEM_ENABLED,   ToggleAliens,   0, NULL, DISPLAY_BOOLEAN },
+    { "Hazards: ",  ITEM_ENABLED,   ToggleHazards,  0, NULL, DISPLAY_BOOLEAN },
     { "Powerups: ", ITEM_ENABLED,   TogglePowerups, 0, NULL, DISPLAY_BOOLEAN },
     { "",           ITEM_NULL,      NULL,           0, NULL, DISPLAY_NORMAL },
     { "Back",       ITEM_ENABLED,   PreviousMenu,   0, NULL, DISPLAY_NORMAL },
@@ -192,9 +192,9 @@ void CyclePlayers()
 }
 
 
-void ToggleAliens()
+void ToggleHazards()
 {
-    game.aliens_on = !game.aliens_on;
+    game.hazards_on = !game.hazards_on;
 }
 
 
@@ -212,7 +212,7 @@ void InitMenu()
     current = &menus[MENU_MAIN];
     
     new_game_items[2].value = &game.num_players;
-    new_game_items[3].value = &game.aliens_on;
+    new_game_items[3].value = &game.hazards_on;
     new_game_items[4].value = &game.powerups_on;
 }
 
@@ -236,7 +236,9 @@ void MenuDown()
         || current->items[current->selected].state == ITEM_DISABLED )
     {
         MenuDown();
+        return;
     }
+    MenuScrollSound();
 }
 
 
@@ -254,7 +256,17 @@ void MenuUp()
         || current->items[current->selected].state == ITEM_DISABLED )
     {
         MenuUp();
+        return;
     }
+    MenuScrollSound();
+}
+
+
+static void ActionSound()
+{
+    DOS_QueueSound(800, 35);
+    DOS_QueueSound(1200, 35);
+    DOS_PlayQueuedSound();
 }
 
 
@@ -267,17 +279,15 @@ void ProcessMenuKey(SDL_Keycode key)
             App::Shared()->ToggleFullscreen();
             break;
         case SDLK_DOWN:
-            MenuScrollSound();
+            //MenuScrollSound();
             MenuDown();
             break;
         case SDLK_UP:
-            MenuScrollSound();
+            //MenuScrollSound();
             MenuUp();
             break;
         case SDLK_RETURN:
-            DOS_QueueSound(800, 35);
-            DOS_QueueSound(1200, 35);
-            DOS_PlayQueuedSound();
+            ActionSound();
             item->action();
             break;
         case SDLK_ESCAPE:
@@ -298,7 +308,11 @@ void ProcessMenuControllerButton(u16 button)
             MenuDown();
             break;
         case SDL_CONTROLLER_BUTTON_A:
+            ActionSound();
             current->items[current->selected].action();
+            break;
+        case SDL_CONTROLLER_BUTTON_START:
+            ContinueGame();
             break;
         default:
             break;

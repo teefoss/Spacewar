@@ -77,9 +77,8 @@ void Game::Start()
         players[i] = new Player(i);
         entities.push_back(players[i]);
     }
-    
-    Missle * m = new Missle();
-    entities.push_back(m);
+        
+    hazard_timer.Start();
 }
 
 
@@ -159,6 +158,21 @@ void Game::TrySpawnPowerup()
 }
 
 
+void Game::TrySpawnHazard()
+{
+    if ( !hazards_on ) {
+        return;
+    }
+    
+    hazard_timer.Run();
+    if ( hazard_timer.Done() ) {
+        Missle * missle = new Missle();
+        entities.push_back(missle);
+        hazard_timer.Start();
+    }
+}
+
+
 void Game::Update(float dt)
 {
     black_hole->EmitParticles(3, DOS_RED);
@@ -170,6 +184,7 @@ void Game::Update(float dt)
     }
 
     TrySpawnPowerup();
+    TrySpawnHazard();
     
     for ( int i = 0; i < GetNumPlayers(); i++ ) {
         players[i]->updateFromInputState(player_input[i], dt);
