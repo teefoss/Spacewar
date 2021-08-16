@@ -250,7 +250,7 @@ void Player::Explode(int dos_color)
         return;
     }
     
-    respawn_timer = RESPAWN_TICKS;
+    respawn_timer.Start();
     shoot_cooldown_timer = 0;
     num_bullets = MAX_BULLETS;
     this->EmitParticles(100, dos_color);
@@ -319,8 +319,12 @@ void Player::Update(float dt)
     
     // run timers
     
-    if ( respawn_timer > 0 ) {
-        --respawn_timer;
+//    if ( respawn_timer > 0 ) {
+//        --respawn_timer;
+//        return;
+//    }
+    respawn_timer.Run();
+    if ( !respawn_timer.Done() ) {
         return;
     }
     
@@ -404,9 +408,11 @@ void Player::Draw(SDL_Renderer * renderer)
     Entity::drawSprite(renderer, number);
 #else
     // TODO: flash faster and faster
-    bool flash = respawn_timer < RESPAWN_TICKS / 2 && FlashInterval(100);
+    //bool flash = respawn_timer < RESPAWN_TICKS / 2 && FlashInterval(100);
+    bool flash = respawn_timer.GetTicks() < REAPPEAR_TICKS && FlashInterval(100);
     
-    if ( !respawn_timer || flash ) {
+    //if ( !respawn_timer || flash ) {
+    if ( respawn_timer.Done() || flash ) {
         Entity::DrawSprite(renderer, id);
         switch ( powerup ) {
             case POWERUP_LASER: {
@@ -555,14 +561,17 @@ void Player::Contact(Entity * hit)
 
 bool Player::IsDead()
 {
-    return (respawn_timer > RESPAWN_TICKS / 2) || num_lives <= 0;
+    //return (respawn_timer > RESPAWN_TICKS / 2) || num_lives <= 0;
+    return respawn_timer.GetTicks() > REAPPEAR_TICKS || num_lives <= 0;
 }
 
 
 
 bool Player::IsRespawning()
 {
-    return respawn_timer > 0 && respawn_timer < RESPAWN_TICKS / 2;
+    //return respawn_timer > 0 && respawn_timer < RESPAWN_TICKS / 2;
+    s16 ticks = respawn_timer.GetTicks();
+    return ticks > 0 && ticks < REAPPEAR_TICKS;
 }
 
 
@@ -586,15 +595,5 @@ void Player::Thrust(float dt)
         velocity += orientation * PLAYER_THRUST * dt;
     }
     
-    // exhaust
-    Vec2 origin, exhaust_v;
-    
-    origin = RandomPointWithinRange(radius / 2.0f);
-    exhaust_v = orientation;
-    exhaust_v.Normalize();
-    exhaust_v.RotateByDegrees(180);
-    exhaust_v *= 100.0f;
-    SDL_Color sdl_color = DOS_CGAColorToSDLColor(player_info[id].color);
-    int time = Random(0, 50);
-    particles.Spawn(origin, exhaust_v, time, sdl_color);
+    ShootExhaustParticles(100.0f, player_info[id].color);
 }

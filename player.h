@@ -6,6 +6,7 @@
 #include "defines.h"
 #include "powerup.h"
 #include "input.h"
+#include "timer.h"
 
 #include <vector>
 
@@ -69,7 +70,8 @@ private:
     void SetPowerupEffect(Powerup * powerup);
     void MakeHUDTexture(SDL_Renderer * renderer);
 
-    s16 respawn_timer = 0;
+    Timer respawn_timer = Timer(RESPAWN_TICKS);
+    //s16 respawn_timer = 0;
     s16 shoot_cooldown_timer = 0;
     s16 bullet_recharge_timer = 0;
     s16 powerup_timer = 0; // powerup active if > 0

@@ -32,6 +32,10 @@ void PrintRect(SDL_Rect r);
 void WrapPosition(Vec2 * position, int w, int h);
 bool LineCircleIntersection(Vec2 p1, Vec2 p2, Vec2 cp, double r/*, bool segment*/);
 
+// math
+
+int Map(int x, int in_min, int in_max, int out_min, int out_max);
+
 // drawing
 
 void SetColor(SDL_Renderer * renderer, const SDL_Color * color);

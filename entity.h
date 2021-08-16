@@ -25,6 +25,7 @@ enum EntityType : u8
     ENTITY_PLAYER,
     ENTITY_BULLET,
     ENTITY_POWERUP,
+    ENTITY_MISSLE
 };
 
 
@@ -49,6 +50,7 @@ public:
     bool IsColliding(Entity * other);
     void Rotate(float degrees);
     void LoadTexture(void);
+    void ShootExhaustParticles(float vel, DOS_Color color);
     float GetHitbox() { return radius * hitbox_adjust; }
     Vec2 GetPosition() { return position; }
 

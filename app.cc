@@ -28,10 +28,14 @@ static void InitSDL()
 void App::InitWindow()
 {
     int scale = 2;
-    m_window = SDL_CreateWindow(GAME_NAME,
-                                0, 0,
-                                GAME_W * scale, GAME_H * scale,
-                                0);
+    
+    int x = SDL_WINDOWPOS_CENTERED;
+    int y = SDL_WINDOWPOS_CENTERED;
+    int w = GAME_W * scale;
+    int h = GAME_H * scale;
+    
+    m_window = SDL_CreateWindow(GAME_NAME, x, y, w, h, 0);
+    
     if ( m_window == NULL ) {
         SDL_ERROR("SDL_CreateWindow failed");
     }

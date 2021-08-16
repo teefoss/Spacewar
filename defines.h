@@ -26,6 +26,7 @@
 #define PLAYER_RADIUS           4.0f
 #define PLAYER_MARGIN           48
 #define RESPAWN_TICKS           (FPS * 3)
+#define REAPPEAR_TICKS          (RESPAWN_TICKS / 2)
 #define SHOT_DELAY              MS_TO_TICKS(250)
 #define PLAYER_ROTATION_SPEED   175.0f
 
@@ -44,6 +45,8 @@
 #define MAX_SHIELD_STRENGTH     MS_TO_TICKS(500)
 
 #define RANDOM_COLORS           -1
+
+#define MISSLE_RADIUS           2.5f
 
 #define ERROR(...)              fprintf(stderr, __VA_ARGS__); \
                                 exit(EXIT_FAILURE);

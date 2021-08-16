@@ -12,12 +12,14 @@
 #include "bullet.h"
 #include "blackhole.h"
 #include "player.h"
+#include "missle.h"
 
 #include <stdlib.h>
 #include <SDL2/SDL_net.h>
 
 Game game = Game();
 const Vec2 center = Vec2(GAME_W / 2, GAME_H / 2);
+const SDL_Rect visible_area = { 0, 0, GAME_W, GAME_H };
 
 void Game::Init()
 {
@@ -75,6 +77,9 @@ void Game::Start()
         players[i] = new Player(i);
         entities.push_back(players[i]);
     }
+    
+    Missle * m = new Missle();
+    entities.push_back(m);
 }
 
 
@@ -90,6 +95,7 @@ int Game::MaxPlayers()
     return max_players;
 }
 
+
 void Game::SetNumPlayers(int n)
 {
     int number = n;
@@ -97,6 +103,7 @@ void Game::SetNumPlayers(int n)
     CLAMP(number, 1, MaxPlayers());
     num_players = number;
 }
+
 
 void Game::Draw(SDL_Renderer * renderer)
 {

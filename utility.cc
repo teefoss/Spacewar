@@ -251,6 +251,12 @@ bool LineCircleIntersection(Vec2 p1, Vec2 p2, Vec2 cp, double r/*, bool segment*
 }
 
 
+int Map(int x, int in_min, int in_max, int out_min, int out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+
 void SetColor(SDL_Renderer * renderer, const SDL_Color * color)
 {
     SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, color->a);

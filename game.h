@@ -46,6 +46,7 @@ private:
     BlackHole * black_hole;
     int powerup_timer = SEC_TO_TICKS(10);
     InputState player_input[MAX_PLAYERS];
+    int level = 1;
     
 #if DEBUG_DATA
     DOS_Console * con;
@@ -54,5 +55,6 @@ private:
 
 extern Game game;
 extern const Vec2 center;
+extern const SDL_Rect visible_area;
 
 #endif /* game_h */

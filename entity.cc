@@ -156,3 +156,17 @@ void Entity::UpdatePosition(float dt, bool wrap)
         WrapPosition(&position, GAME_W, GAME_H);
     }
 }
+
+
+void Entity::ShootExhaustParticles(float vel, DOS_Color color)
+{
+    Vec2 origin = RandomPointWithinRange(radius / 2.0f);
+    
+    Vec2 exhaust_v = orientation;
+    exhaust_v.Normalize();
+    exhaust_v.RotateByDegrees(180);
+    exhaust_v *= vel;
+    SDL_Color sdl_color = DOS_CGAColorToSDLColor(color);
+    
+    particles.Spawn(origin, exhaust_v, Random(0, 50), sdl_color);
+}
