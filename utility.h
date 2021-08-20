@@ -22,7 +22,8 @@
 
 void ClampF(float * in, float min, float max);
 int CalculateLargestWindowedScale(int height);
-void SetFullscreen(SDL_Window * window, SDL_Renderer * renderer, bool fs, int height);
+void SetFullscreen(SDL_Window * window, SDL_Renderer * renderer,
+                   bool fs, int height);
 void RandomizedSound(int len, int min_freq, int max_freq);
 
 // geometry
@@ -30,7 +31,8 @@ void RandomizedSound(int len, int min_freq, int max_freq);
 bool VecInRect(Vec2 v, const SDL_Rect * r);
 void PrintRect(SDL_Rect r);
 void WrapPosition(Vec2 * position, int w, int h);
-bool LineCircleIntersection(Vec2 p1, Vec2 p2, Vec2 cp, double r/*, bool segment*/);
+bool LineCircleIntersection(Vec2 p1, Vec2 p2,
+                            Vec2 cp, double r/*, bool segment*/);
 
 // math
 
