@@ -44,6 +44,7 @@ public:
     virtual void Update(float dt) = 0;
     virtual void Contact(Entity * hit) = 0;
     virtual int Size(void) = 0;
+    virtual void Explode(DOS_Color color, u16 min_freq, u16 max_freq) = 0;
     
     void EmitParticles(int count, int dos_color);
     void ExertGravity(Entity * obj, float gravity, float dt);
@@ -53,6 +54,7 @@ public:
     void ShootExhaustParticles(float vel, DOS_Color color);
     float GetHitbox() { return radius * hitbox_adjust; }
     Vec2 GetPosition() { return position; }
+    DOS_Color GetColor() { return color; }
 
     u8 id;
     Vec2 velocity;
@@ -70,8 +72,11 @@ protected:
     float radius;
     float hitbox_adjust = 1.0f;
     float angle; // for renderering, orientation angle in degrees
+    DOS_Color color = DOS_BLACK;
     char texture_name[100]; // (file name)
     SDL_Texture * texture;
+    u16 min_frequency;
+    u16 max_frequency;
 };
 
 #endif /* object_h */

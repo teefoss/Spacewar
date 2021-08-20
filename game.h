@@ -37,6 +37,7 @@ public:
     int num_players = 2;
     int powerups_on = true;
     int hazards_on = true;
+    int black_hole_on = true;
     
 private:
     void ClearEntities(void);

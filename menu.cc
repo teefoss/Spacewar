@@ -74,7 +74,7 @@ void DrawMenu()
                 DOS_CPrintString(con, *item->value ? "ON\n" : "OFF\n");
                 break;
             case DISPLAY_INFO:
-                DOS_CSetForeground(con, DOS_BRIGHT_GREEN);
+                DOS_CSetForeground(con, DOS_GREEN);
                 DOS_CPrintString(con, "%s\n", item->name);
                 break;
             default:
@@ -92,8 +92,7 @@ void ContinueGame(void);
 void PreviousMenu(void);
 void NextMenu(void);
 void CyclePlayers(void);
-void ToggleHazards(void);
-void TogglePowerups(void);
+void ToggleValue(void);
 
 enum MenuList{
     MENU_MAIN,
@@ -107,8 +106,9 @@ MenuItem new_game_items[] = {
     { "Start Game", ITEM_ENABLED,   StartGame,      0, NULL, DISPLAY_NORMAL },
     { "",           ITEM_NULL,      NULL,           0, NULL, DISPLAY_NORMAL },
     { "Players: ",  ITEM_ENABLED,   CyclePlayers,   0, NULL, DISPLAY_INTEGER },
-    { "Hazards: ",  ITEM_ENABLED,   ToggleHazards,  0, NULL, DISPLAY_BOOLEAN },
-    { "Powerups: ", ITEM_ENABLED,   TogglePowerups, 0, NULL, DISPLAY_BOOLEAN },
+    { "Hazards: ",  ITEM_ENABLED,   ToggleValue,    0, NULL, DISPLAY_BOOLEAN },
+    { "Powerups: ", ITEM_ENABLED,   ToggleValue,    0, NULL, DISPLAY_BOOLEAN },
+    { "Black Hole: ",ITEM_ENABLED,  ToggleValue,    0, NULL, DISPLAY_BOOLEAN },
     { "",           ITEM_NULL,      NULL,           0, NULL, DISPLAY_NORMAL },
     { "Back",       ITEM_ENABLED,   PreviousMenu,   0, NULL, DISPLAY_NORMAL },
 };
@@ -192,15 +192,11 @@ void CyclePlayers()
 }
 
 
-void ToggleHazards()
+void ToggleValue()
 {
-    game.hazards_on = !game.hazards_on;
-}
-
-
-void TogglePowerups()
-{
-    game.powerups_on = !game.powerups_on;
+    int * value = current->items[current->selected].value;
+    
+    *value = !(*value);
 }
 
 
@@ -214,6 +210,7 @@ void InitMenu()
     new_game_items[2].value = &game.num_players;
     new_game_items[3].value = &game.hazards_on;
     new_game_items[4].value = &game.powerups_on;
+    new_game_items[5].value = &game.black_hole_on;
 }
 
 

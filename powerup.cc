@@ -30,8 +30,8 @@ Powerup::Powerup()
     position.x = Random(HUD_MARGIN, GAME_W - HUD_MARGIN);
     position.y = Random(HUD_MARGIN, GAME_H - HUD_MARGIN);
     color = (DOS_Color)Random(DOS_GRAY, DOS_NUMCOLORS);
-    type = (PowerupType)Random(1, NUM_POWERUPS);
-    //type = POWERUP_SHOWPATH; // TEMP: debug
+    //type = (PowerupType)Random(1, NUM_POWERUPS);
+    type = POWERUP_SHOWPATH; // TEMP: debug
     
     PowerupInfo * info = &powerup_info[type];
     lifespan = info->disappears ? MS_TO_TICKS(25000) : -1;
@@ -72,4 +72,11 @@ void Powerup::Contact(Entity * hit)
 int Powerup::Size()
 {
     return (int)sizeof(*this);
+}
+
+
+void Powerup::Explode(DOS_Color color, u16 min_freq, u16 max_freq)
+{
+    alive = false;
+    EmitParticles(30, DOS_BRIGHT_WHITE);
 }

@@ -70,8 +70,10 @@ void Game::Start()
 
     ClearEntities();
         
-    black_hole = new BlackHole();
-    entities.push_back(black_hole);
+    if ( black_hole_on ) {
+        black_hole = new BlackHole();
+        entities.push_back(black_hole);
+    }
     
     for ( int i = 0; i < num_players; i++ ) {
         players[i] = new Player(i);
@@ -175,11 +177,16 @@ void Game::TrySpawnHazard()
 
 void Game::Update(float dt)
 {
-    black_hole->EmitParticles(3, DOS_RED);
+    if ( black_hole_on ) {
+        black_hole->EmitParticles(3, DOS_RED);
+    }
+    
     particles.Update(dt);
 
     if ( paused || menu_is_open ) {
-        black_hole->Update(dt); // the black hole always updates
+        if ( black_hole_on ) {
+            black_hole->Update(dt); // the black hole always updates
+        }
         return;
     }
 

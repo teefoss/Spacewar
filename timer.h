@@ -16,6 +16,7 @@ public:
         s16 adjust = m_variance ? Random(-m_variance, m_variance) : 0;
         m_ticks = m_length + adjust;
     }
+    
     void Stop() { m_ticks = 0; }
     void Run() { if ( m_ticks > 0 ) --m_ticks; }
     bool Done() { return m_ticks == 0; };

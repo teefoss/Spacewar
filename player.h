@@ -19,7 +19,6 @@ struct PlayerState
     virtual void draw(void) = 0;
     virtual void update(void) = 0;
     virtual void contact(void) = 0;
-    virtual void processInput(void) = 0; // TODO: ?
 };
 
 typedef struct
@@ -41,22 +40,21 @@ public:
     void updateFromInputState(InputState input_state, float dt);
     void Draw(SDL_Renderer * renderer) override;
     void Contact(Entity * hit) override;
-    int Size(void) override;
+    int  Size(void) override;
+    void Explode(DOS_Color color, u16 min_freq, u16 max_freq) override;
     
     bool IsActive(void);
-    void Explode(int dos_color);
     void Thrust(float dt);
     void ShootBullet(void);
     void RotateByDegrees(float degrees);
     Vec2 NozzlePoint(void);
     Vec2 LaserEndPoint(void);
     void LaserPlayer(Player * other_player);
-    void ExplosionSound(void);
     void RenderHUD(SDL_Renderer * renderer);
     bool IsColliding(Entity * other);
     
     //u8 number;
-    s8 num_lives = MAX_LIVES; // TODO: need a kill function
+    s8 num_lives = MAX_LIVES;
     s8 num_bullets = MAX_BULLETS;
     PowerupType powerup = POWERUP_NONE;
     s8 shield_strength = MAX_SHIELD_STRENGTH;
@@ -69,9 +67,9 @@ private:
     void EatPowerup(Powerup * powerup);
     void SetPowerupEffect(Powerup * powerup);
     void MakeHUDTexture(SDL_Renderer * renderer);
+    void DrawPath(SDL_Renderer * renderer);
 
-    Timer respawn_timer = Timer(RESPAWN_TICKS);
-    //s16 respawn_timer = 0;
+    s16 respawn_timer = 0;
     s16 shoot_cooldown_timer = 0;
     s16 bullet_recharge_timer = 0;
     s16 powerup_timer = 0; // powerup active if > 0

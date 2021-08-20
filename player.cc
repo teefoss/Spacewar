@@ -88,6 +88,10 @@ Player::Player(int index)
     SDL_SetTextureBlendMode(hud_texture, SDL_BLENDMODE_BLEND);
     
     bullet_texture = ResourceManager::Shared().GetTexture("bullets.png");
+    min_frequency = 400;
+    max_frequency = 1600;
+    color = player_info[index].color;
+    powerup = POWERUP_SHOWPATH;
 }
 
 
@@ -181,12 +185,6 @@ void Player::RenderHUD(SDL_Renderer * renderer)
 }
 
 
-void Player::ExplosionSound()
-{
-    RandomizedSound(60, 400, 1600);
-}
-
-
 void Player::RotateByDegrees(float degrees)
 {
     float new_degrees = degrees;
@@ -244,17 +242,20 @@ void Player::ShootBullet()
 
 
 // dos_color = -1: random color
-void Player::Explode(int dos_color)
+void Player::Explode(DOS_Color dos_color, u16 min_freq, u16 max_freq)
 {
     if ( !IsActive() ) {
         return;
     }
+
+    --num_lives;
     
-    respawn_timer.Start();
+    respawn_timer = RESPAWN_TICKS;
     shoot_cooldown_timer = 0;
     num_bullets = MAX_BULLETS;
-    this->EmitParticles(100, dos_color);
+    EmitParticles(100, dos_color);
     powerup = POWERUP_NONE;
+    RandomizedSound(60, min_freq, max_freq);
 
     ResetPosition();
 }
@@ -294,37 +295,24 @@ void Player::Update(float dt)
 
     if ( shield_up ) {
         --shield_strength;
+                
         if ( shield_strength <= 0 ) {
+            shield_strength = 0;
             shield_up = false;
         }
     } else {
         if ( App::Shared()->GetTicks() % 3 == 0 ) {
             ++shield_strength;
-            if ( shield_strength >= MAX_SHIELD_STRENGTH ) {
+            if ( shield_strength > MAX_SHIELD_STRENGTH ) {
                 shield_strength = MAX_SHIELD_STRENGTH;
             }
         }
     }
-    
-#if 0
-    if ( shield_strength > 0 && shield_up ) {
-        --shield_strength;
-    } else if ( !shield_up ) {
-        ++shield_strength;
-        if ( shield_strength > MAX_SHIELD_STRENGTH ) {
-            shield_strength = MAX_SHIELD_STRENGTH;
-        }
-    }
-#endif
-    
+        
     // run timers
     
-//    if ( respawn_timer > 0 ) {
-//        --respawn_timer;
-//        return;
-//    }
-    respawn_timer.Run();
-    if ( !respawn_timer.Done() ) {
+    if ( respawn_timer > 0 ) {
+        --respawn_timer;
         return;
     }
     
@@ -385,11 +373,34 @@ void Player::LaserPlayer(Player * other_player)
                                 other_player->position,
                                 other_player->radius) )
     {
-        other_player->Explode(player_info[other_player->id].color);
-        other_player->ExplosionSound();
+        other_player->Explode(color, min_frequency, max_frequency);
     }
 }
 
+
+void Player::DrawPath(SDL_Renderer * renderer)
+{
+    Vec2 pos = position;
+    Vec2 vel = velocity;
+    float dt = MS_PER_FRAME / 1000.0f;
+    
+    DOS_SetColor(renderer, (DOS_Color)((int)color - 8)); // darker color
+    
+    for ( int i = 0; i < 2000; i++ ) {
+        pos += vel * dt;
+        
+        // apply black hole gravity
+        if ( game.black_hole_on ) {
+            Vec2 v = Vec2(GAME_W/2, GAME_H/2) - pos;
+            v *= 1.0f / (v.Length() * BLACK_HOLE_GRAVITY) * dt;
+            vel += v;
+        }
+        
+        if ( (i & 8) == 0 ) {
+            SDL_RenderDrawPoint(renderer, pos.x, pos.y);
+        }
+    }
+}
 
 
 void Player::Draw(SDL_Renderer * renderer)
@@ -407,37 +418,19 @@ void Player::Draw(SDL_Renderer * renderer)
     DrawLine(renderer->SDL(), position, position + velocity);
     Entity::drawSprite(renderer, number);
 #else
-    // TODO: flash faster and faster
-    //bool flash = respawn_timer < RESPAWN_TICKS / 2 && FlashInterval(100);
-    bool flash = respawn_timer.GetTicks() < REAPPEAR_TICKS && FlashInterval(100);
+    bool flash = respawn_timer < REAPPEAR_TICKS && FlashInterval(100);
     
-    //if ( !respawn_timer || flash ) {
-    if ( respawn_timer.Done() || flash ) {
+    if ( !respawn_timer || flash ) {
         Entity::DrawSprite(renderer, id);
+        
         switch ( powerup ) {
-            case POWERUP_LASER: {
+            case POWERUP_LASER:
                 DOS_SetColor(renderer, DOS_RandomColor());
                 DrawLine(renderer, NozzlePoint(), LaserEndPoint());
                 break;
-            }
-            case POWERUP_SHOWPATH: {
-                DOS_Color color = player_info[id].color;
-                DOS_SetColor(renderer, (DOS_Color)((int)color - 8));
-                Vec2 pos = position;
-                Vec2 vel = velocity;
-                float dt = MS_PER_FRAME / 1000.0f;
-                
-                for ( int i = 0; i < 2000; i++ ) {
-                    pos += vel * dt;
-                    Vec2 v = Vec2(GAME_W/2, GAME_H/2) - pos;
-                    v *= 1.0f / (v.Length() * BLACK_HOLE_GRAVITY) * dt;
-                    vel += v;
-                    if ( (i & 10) == 0 ) {
-                        SDL_RenderDrawPoint(renderer, pos.x, pos.y);
-                    }
-                }
+            case POWERUP_SHOWPATH:
+                DrawPath(renderer);
                 break;
-            }
             default:
                 break;
         }
@@ -453,21 +446,6 @@ void Player::Draw(SDL_Renderer * renderer)
             DOS_SetColor(renderer, DOS_RandomColor());
             SDL_RenderDrawPoint(renderer, pt.x, pt.y);
         }
-        
-#if 0
-        int diam = 18;
-        int rad = diam / 2;
-        SDL_Rect src = { number * diam, 0, diam, diam };
-        SDL_Rect dst;
-        dst.x = (int)position.x - rad;
-        dst.y = (int)position.y - rad;
-        dst.w = diam;
-        dst.h = diam;
-        
-        ResourceManager * rm = &ResourceManager::shared();
-        SDL_Texture * shield = rm->getTexture("shields.png", renderer);
-        SDL_RenderCopy(renderer, shield, &src, &dst);
-#endif
     }
 }
 
@@ -505,21 +483,8 @@ void Player::EatPowerup(Powerup * pup)
 
             for ( int i = 0; i < (int)game.entities.size(); i++ ) {
                 // draw line
-                switch ( game.entities[i]->type ) {
-                    case ENTITY_PLAYER: {
-                        Player * pl = (Player *)game.entities[i];
-                        pl->Explode(DOS_RED);
-                        pl->num_lives--;
-                        break;
-                    }
-                    case ENTITY_BULLET:
-                    case ENTITY_POWERUP:
-                        game.entities[i]->EmitParticles(10, DOS_RED);
-                        game.entities[i]->alive = false;
-                        break;
-                    default:
-                        break;
-                }
+                game.entities[i]->Explode(DOS_RED, 0, 0);
+                RandomizedSound(100, 200, 2000);
             }
             break;
         }
@@ -538,17 +503,10 @@ void Player::Contact(Entity * hit)
     }
     
     switch ( hit->type ) {
-        case ENTITY_PLAYER: {
-            Player * opponent = (Player *)hit;
-            if ( opponent->IsActive() ) {
-                num_lives--;
-                opponent->num_lives--;
-                Explode(RANDOM_COLORS);
-                opponent->Explode(RANDOM_COLORS);
-                ExplosionSound();
-            }
+        case ENTITY_PLAYER:
+            Explode(color, min_frequency, max_frequency);
+            hit->Explode(hit->GetColor(), 0, 0);
             break;
-        }
         case ENTITY_POWERUP:
             EatPowerup((Powerup *)hit);
             break;
@@ -562,16 +520,14 @@ void Player::Contact(Entity * hit)
 bool Player::IsDead()
 {
     //return (respawn_timer > RESPAWN_TICKS / 2) || num_lives <= 0;
-    return respawn_timer.GetTicks() > REAPPEAR_TICKS || num_lives <= 0;
+    return respawn_timer > REAPPEAR_TICKS || num_lives <= 0;
 }
 
 
 
 bool Player::IsRespawning()
 {
-    //return respawn_timer > 0 && respawn_timer < RESPAWN_TICKS / 2;
-    s16 ticks = respawn_timer.GetTicks();
-    return ticks > 0 && ticks < REAPPEAR_TICKS;
+    return respawn_timer > 0 && respawn_timer < REAPPEAR_TICKS;
 }
 
 

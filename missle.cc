@@ -12,13 +12,11 @@ Missle::Missle()
     position = Vec2((float)INITIAL_RADIUS, 0.0f);
     position.RotateByDegrees(RANDOM_ANGLE);
     position += center;
-
-    // TEMP
-//    position = center;
-//    position.x += GAME_W / 4;
-//    position.y -= GAME_H / 4;
     
     id = Random(0, game.GetNumPlayers()); // target
+    color = DOS_RED;
+    min_frequency = 100;
+    max_frequency = 200;
 }
 
 
@@ -82,21 +80,18 @@ void Missle::Update(float dt)
 }
 
 
+void Missle::Explode(DOS_Color, u16 min_freq, u16 max_freq)
+{
+    EmitParticles(30, DOS_BRIGHT_RED);
+    RandomizedSound(30, 100, 200);
+    alive = false;
+}
+
+
 void Missle::Contact(Entity * hit)
 {
-    switch ( hit->type) {
-        case ENTITY_PLAYER: {
-            Player * player = (Player *)hit;
-            player->Explode(player_info[player->id].color);
-            player->ExplosionSound();
-            EmitParticles(30, DOS_BRIGHT_RED);
-            alive = false;
-            break;
-        }
-            
-        default:
-            break;
-    }
+    Explode(color, min_frequency, max_frequency);
+    hit->Explode(hit->GetColor(), 0, 0);
 }
 
 

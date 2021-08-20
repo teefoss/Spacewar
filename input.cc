@@ -46,7 +46,7 @@ void InputManager::UpdateConsole()
             --num_controllers;
         } else {
             if ( which_keyboard < KB_NUM_USERS ) {
-                DOS_CSetForeground(console, DOS_BROWN);
+                DOS_CSetForeground(console, DOS_BRIGHT_GREEN);
                 DOS_CPrintString(console, kb_strings[which_keyboard++]);
             } else {
                 DOS_CSetBlink(console, true);

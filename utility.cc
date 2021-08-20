@@ -125,6 +125,10 @@ void SetFullscreen(SDL_Window * window, SDL_Renderer * renderer, bool fs, int he
 
 void RandomizedSound(int len, int min_freq, int max_freq)
 {
+    if ( min_freq == 0 || max_freq == 0 ) {
+        return;
+    }
+    
     for ( int i = 0; i < len; i++ ) {
         DOS_QueueSound(arc4random_uniform(max_freq - min_freq) + min_freq, 25);
     }

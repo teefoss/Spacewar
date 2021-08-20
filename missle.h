@@ -12,7 +12,8 @@ public:
     void Update(float dt) override;
     void Contact(Entity * hit) override;
     void Draw(SDL_Renderer * renderer) override;
-    int Size(void) override;
+    int  Size(void) override;
+    void Explode(DOS_Color, u16 min_freq, u16 max_freq) override;
     
 private:
     const float VELOCITY = 45.0f;

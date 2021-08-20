@@ -11,6 +11,8 @@
 BlackHole::BlackHole()
 : Entity(ENTITY_BLACK_HOLE, VEC2_CENTER, BLACK_HOLE_RADIUS, BLACK_HOLE_FILE)
 {
+    min_frequency = 200;
+    max_frequency = 400;
 }
 
 
@@ -54,6 +56,8 @@ void BlackHole::Draw(SDL_Renderer * renderer)
 
 void BlackHole::Contact(Entity * hit)
 {
+    hit->Explode(DOS_RED, min_frequency, max_frequency);
+#if 0
     switch ( hit->type ) {
         case ENTITY_PLAYER: {
             Player * player = (Player *)hit;
@@ -72,4 +76,5 @@ void BlackHole::Contact(Entity * hit)
         default:
             break;
     }
+#endif
 }

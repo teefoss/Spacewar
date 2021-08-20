@@ -2,6 +2,7 @@
 #include "defines.h"
 #include "utility.h"
 #include "player.h"
+#include "game.h"
 
 #define BULLET_SOUND_LEN 10
 
@@ -17,6 +18,9 @@ Bullet::Bullet(Vec2 position, int who_shot)
 : Entity(ENTITY_BULLET, position, BULLET_RADIUS, "bullets.png")
 {
     id = who_shot;
+    min_frequency = 1200;
+    max_frequency = 1600;
+    color = game.players[who_shot]->GetColor();
 }
 
 
@@ -26,11 +30,11 @@ int Bullet::Size()
 }
 
 
-void Bullet::Explode(DOS_Color color, int freq_min, int freq_max)
+void Bullet::Explode(DOS_Color color, u16 freq_min, u16 freq_max)
 {
     EmitParticles(50, color);
     alive = false;
-    RandomizedSound(10, freq_min, freq_max);
+    RandomizedSound(10, min_frequency, max_frequency);
 }
 
 
@@ -57,26 +61,17 @@ void Bullet::Contact(Entity * hit)
             Player * player = (Player *)hit;
             if ( id != player->id ) { // don't shoot yourself
                 if ( player->shield_up ) {
-                    alive = false;
-                    this->Explode(player_info[id].color, 1600, 2000);
+                    Explode(color, min_frequency, max_frequency);
                 } else {
-                    player->num_lives--;
-                    // TODO: 0 lives
-                    player->Explode(player_info[player->id].color);
-                    RandomizedSound(30, 800, 1200);
+                    player->Explode(player->GetColor(), 800, 1200);
                     alive = false;
                 }
             }
             break;
         }
         case ENTITY_BULLET: {
-            Bullet * other_bullet = (Bullet *)hit;
-            if ( id != other_bullet->id ) {
-                this->Explode(DOS_RandomColor(), 1200, 1600);
-                other_bullet->EmitParticles(50, DOS_RandomColor());
-                other_bullet->alive = false;
-            }
-            break;
+            Explode(color, min_frequency, max_frequency);
+            hit->Explode(hit->GetColor(), 0, 0);
         }
         default:
             break;
