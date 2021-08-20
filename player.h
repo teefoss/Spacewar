@@ -6,7 +6,6 @@
 #include "defines.h"
 #include "powerup.h"
 #include "input.h"
-#include "timer.h"
 
 #include <vector>
 

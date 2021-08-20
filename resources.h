@@ -4,30 +4,38 @@
 #include <SDL2/SDL.h>
 #include <unordered_map>
 
-#define GRAPHICS    "graphics/"
-
-class ResourceManager
+typedef enum
 {
-public:
-    static ResourceManager& Shared()
-    {
-        static ResourceManager instance;
-        return instance;
-    }
-    ResourceManager(ResourceManager const&) = delete;
-    void operator=(ResourceManager const&) = delete;
-    
-    void Init(SDL_Renderer * renderer);
-    SDL_Texture * GetTexture(const char * filename);
-    void ReleaseTexture(const char * file_name);
-    
-private:
-    ResourceManager() { };
-    ~ResourceManager();
-    
-    SDL_Renderer * m_renderer = NULL;
-    std::unordered_map<const char *, SDL_Texture *> m_textures;
-    std::unordered_map<const char *, int> m_reference_counts;
-};
+    RES_TEXTURE,
+    RES_SOUND
+} ResourceType;
+
+typedef enum
+{
+    RES_TEXTURE_BLACKHOLE,
+    RES_TEXTURE_SHIPS,
+    RES_TEXTURE_BULLETS,
+    RES_TEXTURE_POWERUPS,
+    RES_TEXTURE_MISSLE,
+    RES_COUNT
+} ResourceID;
+
+typedef struct
+{
+    ResourceID      id;
+    ResourceType    type;
+    const char *    file_name;
+} ResourceInfo;
+
+typedef struct
+{
+    void *          data;
+    ResourceInfo *  info;
+} Resource;
+
+void    InitResources(SDL_Renderer * renderer);
+void    FreeResources(void);
+void *  GetResource(ResourceID id);
+void    ReleaseResource(ResourceID id);
 
 #endif /* resources_h */

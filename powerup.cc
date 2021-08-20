@@ -25,7 +25,7 @@ static PowerupInfo powerup_info[NUM_POWERUPS] = {
 
 
 Powerup::Powerup()
-: Entity(ENTITY_POWERUP, Vec2(0, 0), 5.5f, "powerups.png")
+: Entity(ENTITY_POWERUP, Vec2(0, 0), 5.5f, RES_TEXTURE_POWERUPS)
 {
     position.x = Random(HUD_MARGIN, GAME_W - HUD_MARGIN);
     position.y = Random(HUD_MARGIN, GAME_H - HUD_MARGIN);
@@ -75,8 +75,12 @@ int Powerup::Size()
 }
 
 
-void Powerup::Explode(DOS_Color color, u16 min_freq, u16 max_freq)
+void Powerup::Explode(DOS_Color particle_color, u16 min_freq, u16 max_freq)
 {
+    (void)particle_color;
+    (void)min_freq;
+    (void)max_freq;
+    
     alive = false;
     EmitParticles(30, DOS_BRIGHT_WHITE);
 }

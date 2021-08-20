@@ -1,58 +1,58 @@
 #ifndef storage_h
 #define storage_h
 
+#include "types.h"
+
 #include <string.h>
 #include <stdlib.h>
 
-
-template<typename T>
+template <typename T>
 class Storage
 {
 public:
-    Storage(unsigned count = 0) {
-        buffer = (T *)calloc(count, sizeof(*buffer));
-        num_elements = count;
+    Storage(size_t count = 0) {
+        this->count = count;
+        buffer_size = count + sizeof(T);
+        buffer = (T *)malloc(buffer_size);
     }
     ~Storage() { free(buffer); }
     
-    unsigned Count() const { return num_elements; }
-    void Empty() { num_elements = 0; }
-    void Append(T element) { Insert(num_elements, element); }
-    void Insert(unsigned i, T element);
-    void Remove(unsigned i);
+    unsigned Count() const { return (unsigned)count; }
+    void Empty() { count = 0; }
+    void Insert(T element);
+    void Remove(unsigned index);
+    T * GetPointer(unsigned index) { return &buffer[index]; } // TODO: how?
     
-    T operator[](unsigned i) { return buffer[i]; }
-    T& operator[](unsigned i) const { return buffer[i]; }
+    T   operator[](unsigned index) { return buffer[index]; }
+    T&  operator[](unsigned index) const { return buffer[index]; }
     operator T *() { return buffer; };
     operator const T *() const;
     
-    // TODO:
-    // Particle * p = &particles[i] results in 'cannot take addr of temp obj'?
-    
 private:
     T * buffer = NULL;
-    unsigned num_elements;
+    size_t buffer_size;
+    size_t count;
 };
 
 
+
 template <typename T>
-void Storage<T>::Insert(unsigned i, T element)
+void Storage<T>::Insert(T element)
 {
-    size_t size = sizeof(T);
-        
-    buffer = (T *)realloc(buffer, (num_elements + 1) * size);
-    
-    memmove(&buffer[i + 1], &buffer[i], size * (num_elements - i));
-    memmove(&buffer[i], &element, size);
-    ++num_elements;
+    ++count;
+    if ( count * sizeof(T) > buffer_size ) {
+        buffer_size += 16 * sizeof(T);
+        buffer = (T *)realloc(buffer, buffer_size);
+    }
+    buffer[count - 1] = element;
 }
 
 
 template <typename T>
-void Storage<T>::Remove(unsigned i)
+void Storage<T>::Remove(unsigned index)
 {
-    memmove(&buffer[i], &buffer[i + 1], sizeof(T) * (num_elements - i - 1));
-    --num_elements;
+    buffer[index] = buffer[--count];
 }
+
 
 #endif /* storage_h */

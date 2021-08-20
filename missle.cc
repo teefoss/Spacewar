@@ -7,7 +7,7 @@
 #include "app.h"
 
 Missle::Missle()
-: Entity(ENTITY_MISSLE, Vec2(0, 0), MISSLE_RADIUS, "missle.png")
+: Entity(ENTITY_MISSLE, Vec2(0, 0), MISSLE_RADIUS, RES_TEXTURE_MISSLE)
 {
     position = Vec2((float)INITIAL_RADIUS, 0.0f);
     position.RotateByDegrees(RANDOM_ANGLE);
@@ -82,6 +82,9 @@ void Missle::Update(float dt)
 
 void Missle::Explode(DOS_Color, u16 min_freq, u16 max_freq)
 {
+    (void)min_freq;
+    (void)max_freq;
+    
     EmitParticles(30, DOS_BRIGHT_RED);
     RandomizedSound(30, 100, 200);
     alive = false;

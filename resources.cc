@@ -1,70 +1,116 @@
 #include "resources.h"
 #include "log.h"
 #include "defines.h"
+#include "storage.h"
 
 #include <SDL2/SDL_image.h>
 #include <stdlib.h>
 
-ResourceManager::~ResourceManager()
+#define GRAPHICS_PATH       "graphics/"
+#define RESOURCE_NOT_FOUND  -1
+#define RES_DEBUG           0
+
+ResourceInfo info[RES_COUNT] = {
+    { RES_TEXTURE_BLACKHOLE, RES_TEXTURE, GRAPHICS_PATH"black_hole.png" },
+    { RES_TEXTURE_SHIPS,     RES_TEXTURE, GRAPHICS_PATH"ships.png" },
+    { RES_TEXTURE_BULLETS,   RES_TEXTURE, GRAPHICS_PATH"bullets.png" },
+    { RES_TEXTURE_POWERUPS,  RES_TEXTURE, GRAPHICS_PATH"powerups.png" },
+    { RES_TEXTURE_MISSLE,    RES_TEXTURE, GRAPHICS_PATH"missle.png" },
+};
+
+static Storage<Resource> resources;
+static int ref_counts[RES_COUNT];
+static SDL_Renderer * resource_renderer;
+
+
+void InitResources(SDL_Renderer * renderer)
 {
-    for ( auto it : m_textures ) {
-        SDL_DestroyTexture(it.second);
+    resource_renderer = renderer;
+}
+
+
+static void FreeResource(Resource * resource)
+{
+    switch (resource->info->type ) {
+        case RES_TEXTURE:
+            SDL_DestroyTexture((SDL_Texture *)resource->data);
+            resource->data = NULL;
+            break;
+        case RES_SOUND:
+            break;
+        default:
+            break;
     }
 }
 
 
-void ResourceManager::Init(SDL_Renderer * renderer)
+void FreeResources()
 {
-    m_renderer = renderer;
+    Resource * r = resources;
+    for ( int i = 0; i < resources.Count(); i++, r++ ) {
+        --ref_counts[r->info->id];
+        FreeResource(r);
+    }
+    
+    resources.Empty();
 }
 
 
-SDL_Texture *
-ResourceManager::GetTexture(const char * file_name)
+static int FindResource(ResourceID id)
 {
-    auto element = m_textures.find(file_name);
+    for ( int i = 0; i < resources.Count(); i++ ) {
+        if ( resources[i].info->id == id ) {
+            return i;
+        }
+    }
     
-    if ( element != m_textures.end() ) { // found
-        
-        auto ref_count = m_reference_counts.find(file_name);
-        ++ref_count->second;
-        
-        return element->second;
-        
-    } else { // not found, load it
+    return RESOURCE_NOT_FOUND;
+}
 
-        char * path = new char[strlen(file_name) + strlen(GRAPHICS)];
-        strcpy(path, GRAPHICS);
-        strcat(path, file_name);
-              
-        SDL_Texture * texture = IMG_LoadTexture(m_renderer, path);
-        if ( texture == NULL ) {
-            SDL_ERROR("IMG_LoadTexture failed\n");
+
+void * GetResource(ResourceID id)
+{
+    int i = FindResource(id);
+        
+    if ( i == RESOURCE_NOT_FOUND ) {
+
+        Resource resource;
+        resource.info = &info[id];
+        
+        // load the resource
+        switch ( info[id].type ) {
+            case RES_TEXTURE:
+                resource.data
+                    = IMG_LoadTexture(resource_renderer, info[id].file_name);
+                break;
+            case RES_SOUND:
+                // TODO: load sound
+                break;
+            default:
+                ERROR("GetResource: strange resource type!\n");
+                break;
         }
         
-        m_reference_counts.insert( {file_name, 1} );
-        m_textures.insert( {file_name, texture} );
-        delete[] path;
-        
-        return texture;
+        resources.Insert(resource);
+        i = resources.Count() - 1;
     }
+    
+    ref_counts[i]++;
+    return resources[i].data;
 }
 
 
-void ResourceManager::ReleaseTexture(const char * file_name)
+void ReleaseResource(ResourceID id)
 {
-    auto element = m_textures.find(file_name);
+    int i = FindResource(id);
     
-    if ( element != m_textures.end() ) {
-
-        auto ref_count = m_reference_counts.find(file_name);
-                
-        if ( ref_count->second == 1 ) {
-            ref_count->second = 0;
-            SDL_DestroyTexture(element->second);
-            m_textures.erase(element);
-        } else {
-            --ref_count->second;
+    if ( i == RESOURCE_NOT_FOUND ) {
+        ERROR("tried to release unloaded resource!\n"); // TEMP: debug
+    } else {
+        --ref_counts[id];
+        if ( ref_counts[id] == 0 ) {
+            FreeResource(resources.GetPointer(i));
+            resources.Remove(i);
         }
     }
 }

@@ -66,7 +66,7 @@ App::App(int argc, char ** argv)
     InitSDL();
     InitWindow();
     InitRenderer();
-    ResourceManager::Shared().Init(m_renderer);
+    InitResources(m_renderer);
     InitNet();
     InitMenu();
     input.Init(m_renderer);
@@ -86,6 +86,7 @@ App::~App()
 {
     game.Quit();
     NetQuit();
+    FreeResources();
     
     SDL_DestroyRenderer(m_renderer);
     SDL_DestroyWindow(m_window);

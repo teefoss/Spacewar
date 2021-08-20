@@ -4,6 +4,7 @@
 #include "vec2.h"
 #include "particle.h"
 #include "types.h"
+#include "resources.h"
 
 #include <dos.h>
 
@@ -36,7 +37,8 @@ public:
     (   EntityType type,
         Vec2 origin,
         float radius,
-        const char * texture_name,
+        //const char * texture_name,
+        ResourceID texture_id,
         Cardinal direction = CARDINAL_EAST );
     virtual ~Entity();
 
@@ -51,7 +53,7 @@ public:
     bool IsColliding(Entity * other);
     void Rotate(float degrees);
     void LoadTexture(void);
-    void ShootExhaustParticles(float vel, DOS_Color color);
+    void ShootExhaustParticles(float vel, DOS_Color particle_color);
     float GetHitbox() { return radius * hitbox_adjust; }
     Vec2 GetPosition() { return position; }
     DOS_Color GetColor() { return color; }
@@ -73,8 +75,9 @@ protected:
     float hitbox_adjust = 1.0f;
     float angle; // for renderering, orientation angle in degrees
     DOS_Color color = DOS_BLACK;
-    char texture_name[100]; // (file name)
-    SDL_Texture * texture;
+    //char texture_name[100]; // (file name)
+    ResourceID texture_id;
+    SDL_Texture * texture = NULL;
     u16 min_frequency;
     u16 max_frequency;
 };

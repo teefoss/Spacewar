@@ -27,7 +27,7 @@ public:
     void Draw(SDL_Renderer * renderer) override;
     void Contact(Entity * hit) override;
     int  Size(void) override;
-    void Explode(DOS_Color color, u16 min_freq, u16 max_freq) override;
+    void Explode(DOS_Color particle_color, u16 min_freq, u16 max_freq) override;
 
     PowerupType type;
     s16 effect_time; // how long the player has it for

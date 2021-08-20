@@ -67,7 +67,7 @@ const PlayerInfo player_info[MAX_PLAYERS] =
 
 
 Player::Player(int index)
-: Entity(ENTITY_PLAYER, Vec2(0, 0), PLAYER_RADIUS, "ships.png")
+: Entity(ENTITY_PLAYER, Vec2(0, 0), PLAYER_RADIUS, RES_TEXTURE_SHIPS)
 {
     id = index;
     hitbox_adjust = 0.8f;
@@ -87,7 +87,8 @@ Player::Player(int index)
     
     SDL_SetTextureBlendMode(hud_texture, SDL_BLENDMODE_BLEND);
     
-    bullet_texture = ResourceManager::Shared().GetTexture("bullets.png");
+    //bullet_texture = ResourceManager::Shared().GetTexture("bullets.png");
+    bullet_texture = (SDL_Texture *)GetResource(RES_TEXTURE_BULLETS);
     min_frequency = 400;
     max_frequency = 1600;
     color = player_info[index].color;
@@ -98,7 +99,8 @@ Player::Player(int index)
 Player::~Player()
 {
     SDL_DestroyTexture(hud_texture);
-    ResourceManager::Shared().ReleaseTexture("bullets.png");
+    //ResourceManager::Shared().ReleaseTexture("bullets.png");
+    ReleaseResource(RES_TEXTURE_BULLETS);
 }
 
 

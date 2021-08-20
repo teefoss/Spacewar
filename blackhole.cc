@@ -6,10 +6,8 @@
 #include "random.h"
 #include "game.h"
 
-#define BLACK_HOLE_FILE "black_hole.png"
-
 BlackHole::BlackHole()
-: Entity(ENTITY_BLACK_HOLE, VEC2_CENTER, BLACK_HOLE_RADIUS, BLACK_HOLE_FILE)
+: Entity(ENTITY_BLACK_HOLE, center, BLACK_HOLE_RADIUS, RES_TEXTURE_BLACKHOLE)
 {
     min_frequency = 200;
     max_frequency = 400;
@@ -57,24 +55,12 @@ void BlackHole::Draw(SDL_Renderer * renderer)
 void BlackHole::Contact(Entity * hit)
 {
     hit->Explode(DOS_RED, min_frequency, max_frequency);
-#if 0
-    switch ( hit->type ) {
-        case ENTITY_PLAYER: {
-            Player * player = (Player *)hit;
-            if ( player->IsActive() ) {
-                player->num_lives--;
-                player->Explode(DOS_RED);
-                RandomizedSound(30, 200, 300);
-            }
-            break;
-        }
-        case ENTITY_BULLET: {
-            Bullet * bullet = (Bullet *)hit;
-            bullet->Explode(DOS_RED, 300, 400);
-            break;
-        }
-        default:
-            break;
-    }
-#endif
+}
+
+
+void BlackHole::Explode(DOS_Color color, u16 min_freq, u16 max_freq)
+{
+    (void)color;
+    (void)min_freq;
+    (void)max_freq;
 }

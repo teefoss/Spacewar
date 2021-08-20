@@ -60,6 +60,10 @@ void Game::ClearEntities()
     }
     
     entities.clear();
+    
+    black_hole = NULL;
+    for ( int i = 0; i < MAX_PLAYERS; i++ )
+        players[i] = NULL;
 }
 
 
@@ -79,8 +83,6 @@ void Game::Start()
         players[i] = new Player(i);
         entities.push_back(players[i]);
     }
-        
-    hazard_timer.Start();
 }
 
 
@@ -166,11 +168,11 @@ void Game::TrySpawnHazard()
         return;
     }
     
-    hazard_timer.Run();
-    if ( hazard_timer.Done() ) {
+    --hazard_timer;
+    if ( hazard_timer <= 0 ) {
         Missle * missle = new Missle();
         entities.push_back(missle);
-        hazard_timer.Start();
+        hazard_timer = SEC_TO_TICKS(20); // TODO: define, randomize
     }
 }
 

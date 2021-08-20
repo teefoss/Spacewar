@@ -53,4 +53,7 @@
 #define SDL_ERROR(msg)          fprintf(stderr, msg ": %s\n", SDL_GetError()); \
                                 exit(EXIT_FAILURE);
 
+#define ENTER()                 printf("entered %s\n", __func__)
+#define EXIT()                  printf("exited %s\n", __func__)
+
 #endif /* defines_h */

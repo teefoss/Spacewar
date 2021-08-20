@@ -15,7 +15,7 @@ static SDL_Rect bullet_bounds = {
 
 
 Bullet::Bullet(Vec2 position, int who_shot)
-: Entity(ENTITY_BULLET, position, BULLET_RADIUS, "bullets.png")
+: Entity(ENTITY_BULLET, position, BULLET_RADIUS, RES_TEXTURE_BULLETS)
 {
     id = who_shot;
     min_frequency = 1200;
@@ -32,6 +32,9 @@ int Bullet::Size()
 
 void Bullet::Explode(DOS_Color color, u16 freq_min, u16 freq_max)
 {
+    (void)freq_min;
+    (void)freq_max;
+    
     EmitParticles(50, color);
     alive = false;
     RandomizedSound(10, min_frequency, max_frequency);

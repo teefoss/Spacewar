@@ -45,10 +45,10 @@ private:
     void TrySpawnHazard(void);
     
     BlackHole * black_hole;
-    Timer hazard_timer = Timer(SEC_TO_TICKS(20));
+    int hazard_timer = SEC_TO_TICKS(20);
     int powerup_timer = SEC_TO_TICKS(10);
     InputState player_input[MAX_PLAYERS];
-    int level = 1;
+    //int level = 1; TODO: levels
     
 #if DEBUG_DATA
     DOS_Console * con;

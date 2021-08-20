@@ -12,7 +12,8 @@ Entity::Entity
 (   EntityType type,
     Vec2 origin,
     float radius,
-    const char * texture_name,
+    //const char * texture_name,
+    ResourceID texture_id,
     Cardinal direction )
 {
     this->type = type;
@@ -22,24 +23,28 @@ Entity::Entity
     velocity.Zero();
     SetOrientation(direction);
     
-    strcpy(this->texture_name, texture_name);
+    //strcpy(this->texture_name, texture_name);
+    this->texture_id = texture_id;
     LoadTexture();
 }
 
 
 Entity::~Entity()
 {
-    ResourceManager::Shared().ReleaseTexture(texture_name);
+    ReleaseResource(texture_id);
+    //ResourceManager::Shared().ReleaseTexture(texture_name);
 }
 
 
 void Entity::LoadTexture()
 {
-    ResourceManager& resource_manager = ResourceManager::Shared();
+    //ResourceManager& resource_manager = ResourceManager::Shared();
     if ( texture ) {
-        resource_manager.ReleaseTexture(texture_name);
+        //resource_manager.ReleaseTexture(texture_name);
+        ReleaseResource(texture_id);
     }
-    texture = ResourceManager::Shared().GetTexture(texture_name);
+    //texture = ResourceManager::Shared().GetTexture(texture_name);
+    texture = (SDL_Texture *)GetResource(texture_id);
 }
 
 
@@ -158,7 +163,7 @@ void Entity::UpdatePosition(float dt, bool wrap)
 }
 
 
-void Entity::ShootExhaustParticles(float vel, DOS_Color color)
+void Entity::ShootExhaustParticles(float vel, DOS_Color particle_color)
 {
     Vec2 origin = RandomPointWithinRange(radius / 2.0f);
     
@@ -166,7 +171,7 @@ void Entity::ShootExhaustParticles(float vel, DOS_Color color)
     exhaust_v.Normalize();
     exhaust_v.RotateByDegrees(180);
     exhaust_v *= vel;
-    SDL_Color sdl_color = DOS_CGAColorToSDLColor(color);
+    SDL_Color sdl_color = DOS_CGAColorToSDLColor(particle_color);
     
     particles.Spawn(origin, exhaust_v, Random(0, 50), sdl_color);
 }

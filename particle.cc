@@ -5,10 +5,16 @@
 ParticleSystem particles = ParticleSystem();
 
 
-void ParticleSystem::Spawn(Vec2 pos, Vec2 vel, int lifespan, SDL_Color & color)
+void ParticleSystem::Spawn(Vec2 pos, Vec2 vel, s16 lifespan, SDL_Color color)
 {
-    Particle p = { pos, vel, lifespan, color };
-    particle_store.Append(p);
+    Particle p = {
+        .position   = pos,
+        .velocity   = vel,
+        .color      = color,
+        .lifespan   = lifespan
+    };
+    
+    particle_store.Insert(p);
 }
 
 
@@ -29,7 +35,7 @@ void ParticleSystem::Update(float dt)
         p->position += p->velocity * dt;
         WrapPosition(&p->position, GAME_W, GAME_H);
         
-        if ( --p->lifespan < 0 ) {
+        if ( --p->lifespan <= 0 ) {
             particle_store.Remove(i);
         }
     }
